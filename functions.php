@@ -44,7 +44,7 @@ function checkYoutubeSubscription($subscriberChannelId, $targetChannelId) {
     return true;
 }
 
-// --- SOVEREIGN AI INTELLIGENCE SUITE (v4.0 Enhanced Marketing) ---
+// --- SOVEREIGN AI INTELLIGENCE SUITE (v4.5 Enhanced Writer) ---
 
 function extractJsonFromText($text) {
     if (preg_match('/```json\s*([\s\S]*?)\s*```/', $text, $matches)) {
@@ -102,21 +102,30 @@ function generateAIArticle($broad_topic) {
 
     $models = getAvailableGeminiModels();
     
-    // Professional Marketing Prompt
-    $promptText = "Role: World-class Digital Marketing Expert & Copywriter.\n";
-    $promptText .= "Task: Create a high-converting, educational blog post about: '" . $broad_topic . "'.\n";
-    $promptText .= "Style: Professional, engaging, storytelling, authoritative but accessible.\n";
-    $promptText .= "Structure Requirements:\n";
-    $promptText .= "1. Title: Catchy, SEO-optimized, max 80 chars.\n";
-    $promptText .= "2. Content: Min 600 words. Use valid HTML tags (<h2>, <h3>, <p>, <ul>, <li>, <strong>). Break paragraphs frequently for readability.\n";
-    $promptText .= "3. Meta Desc: Persuasive summary under 160 chars.\n";
-    $promptText .= "4. Image Keywords: 2-3 specific English keywords for Unsplash search (e.g., 'startup office, technology').\n";
-    $promptText .= "OUTPUT FORMAT: STRICT JSON RFC8259 ONLY. No Markdown code blocks. Keys: title, content, meta_desc, image_keywords.";
+    // PROFESSIONAL HUMAN-LIKE WRITER PROMPT
+    $promptText = "Role: Expert Copywriter & Storyteller (Indonesian Language Specialist).\n";
+    $promptText .= "Task: Write a highly engaging, human-like article about: '" . $broad_topic . "'.\n";
+    $promptText .= "Language: Bahasa Indonesia (Formal but Conversational/Flowing).\n\n";
+    
+    $promptText .= "STRICT STRUCTURE & FORMATTING RULES:\n";
+    $promptText .= "1. DO NOT write wall-of-text. You MUST use short paragraphs (max 3-4 sentences per paragraph).\n";
+    $promptText .= "2. Use HTML tags for structure: <h2> for Main Chapters (BAB), <h3> for Sub-points, <p> for paragraphs.\n";
+    $promptText .= "3. Ensure high readability. Add breathing space between ideas.\n";
+    $promptText .= "4. Content Flow:\n";
+    $promptText .= "   - Introduction: Hook the reader immediately.\n";
+    $promptText .= "   - Body: Divided into 3-4 distinct sections (BAB) with clear headings.\n";
+    $promptText .= "   - Conclusion: Actionable summary.\n";
+    $promptText .= "5. Do not number the paragraphs manually, let HTML tags handle structure.\n\n";
+
+    $promptText .= "OUTPUT FORMAT: Valid JSON Only. Keys: 'title', 'content', 'meta_desc', 'image_keywords'.\n";
+    $promptText .= "- 'content' must be a raw HTML string containing the full article with proper tagging.\n";
+    $promptText .= "- 'meta_desc' must be under 160 chars, persuasive.\n";
+    $promptText .= "- 'image_keywords' in English for image search.";
 
     $data = [
         "contents" => [["parts" => [["text" => $promptText]]]],
         "generationConfig" => [
-            "temperature" => 0.7,
+            "temperature" => 0.75,
             "maxOutputTokens" => 8000,
             "responseMimeType" => "application/json"
         ]
@@ -147,7 +156,6 @@ function generateAIArticle($broad_topic) {
                 
                 if (json_last_error() === JSON_ERROR_NONE && !empty($jsonResult['content'])) {
                     $jsonResult['used_model'] = $model;
-                    // Fallback for missing meta
                     if (!isset($jsonResult['meta_desc'])) $jsonResult['meta_desc'] = substr(strip_tags($jsonResult['content']), 0, 150) . '...';
                     return $jsonResult;
                 }
