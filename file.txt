@@ -1,0 +1,43 @@
+PANDUAN INSTALASI URAT ID (PREMIUM SEO & YOUTUBE ECOSYSTEM)
+===========================================================
+
+1. PERSYARATAN SERVER
+   - PHP Versi 7.4 atau 8.x
+   - MySQL / MariaDB Database
+   - Ekstensi PHP: PDO, cURL, JSON
+   - Izin Tulis (Write Permission) pada folder root untuk upload gambar.
+
+2. KONFIGURASI DATABASE & API
+   a. Buka file `config.php`.
+   b. Sesuaikan DB_HOST, DB_NAME, DB_USER, dan DB_PASS dengan hosting Anda.
+   c. Pastikan YOUTUBE_API_KEY valid. (Dapatkan di Google Cloud Console).
+   d. Anda dapat mengubah konstanta harga (PRICE_PER_SUB) jika diperlukan.
+
+3. INSTALASI DATABASE OTOMATIS
+   a. Upload semua file ke hosting (public_html).
+   b. Buka browser dan akses: https://website-anda.com/install_db.php
+   c. Jika muncul pesan "Tables created successfully", instalasi database selesai.
+   d. PENTING: Hapus file `install_db.php` setelah instalasi demi keamanan.
+
+4. FOLDER UPLOADS
+   a. Pastikan folder `uploads/` dan `uploads/blog/` tersedia.
+   b. Jika tidak ada, buat folder tersebut dan set permission ke 755 atau 777.
+
+5. SETTING CRON JOB (Sistem Keamanan & Penalti)
+   Sistem ini memiliki fitur proteksi otomatis jika user melakukan unsubscribe.
+   Setting Cron Job di cPanel:
+   - Waktu: Sekali per jam (0 * * * *)
+   - Command: /usr/local/bin/php /home/username/public_html/cron_protect.php
+   (Sesuaikan path PHP dan path file dengan hosting Anda).
+
+6. CARA MENGGUNAKAN FITUR BLOG
+   a. Masuk ke halaman Admin (Pastikan logic login admin di admin.php disesuaikan dengan kebutuhan keamanan produksi, saat ini menggunakan session user biasa).
+   b. Gunakan form "Tulis Artikel Blog".
+   c. Isi Judul, Konten (bisa HTML sederhana), dan Upload Thumbnail.
+   d. Artikel akan otomatis muncul di Halaman Depan dan halaman Blog.
+
+7. SECURITY NOTICE
+   - File `admin.php` saat ini hanya diproteksi cek session login sederhana. 
+   - Untuk Production, tambahkan kolom `role` di tabel users dan cek `if($user['role'] != 'admin') die('Access Denied');`.
+
+Selamat Menggunakan Urat ID!
