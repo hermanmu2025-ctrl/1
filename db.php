@@ -2,14 +2,22 @@
 require_once 'config.php';
 
 try {
-    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", DB_USER, DB_PASS);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+    $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+    $options = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
 } catch (PDOException $e) {
-    // Check if we are running install_db, if not show error
+    // Graceful Error Handling during Installation Check
     if (strpos($_SERVER['SCRIPT_NAME'], 'install_db.php') === false) {
-         die("<div style='font-family:sans-serif; text-align:center; padding:50px;'>Database connection failed. <br><br> <a href='install_db.php' style='background:#2563eb; color:white; padding:10px 20px; text-decoration:none; border-radius:5px;'>Run Installer</a></div>");
+         die("<div style='font-family:sans-serif; text-align:center; padding:100px; background:#f8fafc; color:#334155;'>
+                <h1 style='margin-bottom:10px;'>System Maintenance</h1>
+                <p>Database connection is currently unavailable.</p>
+                <br> 
+                <a href='install_db.php' style='background:#2563eb; color:white; padding:12px 25px; text-decoration:none; border-radius:8px; font-weight:bold;'>Run System Installer</a>
+             </div>");
     }
 }
 ?>

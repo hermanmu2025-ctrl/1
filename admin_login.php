@@ -9,50 +9,34 @@ if (isset($_SESSION['admin_logged_in'])) {
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pass = $_POST['password'] ?? '';
-    // Security Requirement: Fixed Password 'Amnet123'
     if ($pass === ADMIN_PASSWORD) {
         $_SESSION['admin_logged_in'] = true;
         header("Location: admin.php");
         exit;
     } else {
-        $error = "Password Salah!";
+        $error = "Invalid Security Key";
     }
 }
 
-$page_title = "Admin Login";
+$page_title = "Restricted Access";
 include 'header.php';
 ?>
-
-<div class="min-h-[80vh] flex items-center justify-center p-6 bg-slate-50">
-    <div class="glass-panel p-10 rounded-3xl w-full max-w-md shadow-2xl border border-white">
-        <div class="text-center mb-10">
-            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
-                <i data-lucide="shield-alert" class="w-10 h-10 text-red-600"></i>
-            </div>
-            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Admin Portal</h1>
-            <p class="text-slate-500 font-medium">Restricted Access Only</p>
+<div class="flex items-center justify-center min-h-[80vh]">
+    <div class="w-full max-w-md p-10 bg-white rounded-3xl shadow-2xl border border-slate-100 text-center">
+        <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <i data-lucide="shield-alert" class="w-10 h-10 text-red-600"></i>
         </div>
-
+        <h1 class="text-2xl font-bold text-slate-900 mb-2">Admin Portal</h1>
+        <p class="text-slate-400 mb-8">Authorized Personnel Only</p>
+        
         <?php if($error): ?>
-            <div class="bg-red-50 text-red-600 p-4 rounded-xl mb-6 text-center font-bold text-sm border border-red-100 flex items-center justify-center gap-2">
-                <i data-lucide="x-circle" class="w-4 h-4"></i> <?= $error ?>
-            </div>
+            <div class="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-bold mb-4"><?= $error ?></div>
         <?php endif; ?>
 
-        <form method="POST" class="space-y-6">
-            <div>
-                <label class="block text-sm font-bold text-slate-700 mb-2">Security Key</label>
-                <input type="password" name="password" required placeholder="Enter Password..." 
-                       class="w-full bg-slate-50 border border-slate-200 rounded-xl p-5 outline-none focus:ring-2 focus:ring-red-500 transition text-slate-800 font-bold placeholder:font-normal">
-            </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-red-600/30 transition transform active:scale-95">
-                Authenticate
-            </button>
+        <form method="POST">
+            <input type="password" name="password" placeholder="Security Key..." required class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl mb-4 focus:ring-2 focus:ring-red-500 outline-none">
+            <button class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-xl transition">Authenticate</button>
         </form>
-        
-        <div class="mt-8 text-center">
-            <a href="index.php" class="text-slate-400 text-xs font-bold hover:text-slate-600 transition">Back to Home</a>
-        </div>
     </div>
 </div>
 <script>lucide.createIcons();</script>
