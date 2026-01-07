@@ -36,27 +36,25 @@ function checkYoutubeSubscription($subscriberChannelId, $targetChannelId) {
     return true;
 }
 
-// UPDATE LOGIKA AI (GEMINI)
+// --- UPDATED AI LOGIC (FIXED FOR FREE TIER & AUTOMATION) ---
 function generateAIArticle($broad_topic) {
-    if (GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
-        return ['error' => 'API Key Gemini belum disetting di config.php'];
+    // 1. Validate API Key
+    if (!defined('GEMINI_API_KEY') || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || empty(GEMINI_API_KEY)) {
+        return ['error' => 'API Key Gemini belum dikonfigurasi di config.php'];
     }
 
     $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . GEMINI_API_KEY;
     
-    // LOGIKA: Prompt Engineering yang diperbarui untuk memenuhi syarat:
-    // 1. Topik spesifik dari keyword luas.
-    // 2. Panjang 3000 - 5000 karakter.
-    // 3. Format JSON.
-    
+    // 2. Optimized Prompt for Free Tier
+    // Removed complex formatting instructions that might confuse the model, relying on JSON schema instead.
     $promptText = "Bertindaklah sebagai Pakar SEO dan Content Creator YouTube Senior. \n";
-    $promptText .= "Tugas: Buat satu artikel blog yang sangat mendalam dan spesifik berdasarkan kategori luas: '" . $broad_topic . "'. \n";
-    $promptText .= "Syarat Utama (WAJIB DIPATUHI): \n";
-    $promptText .= "1. Buat JUDUL yang unik, spesifik, clickbait, dan mengandung emosi. Jangan hanya menggunakan kategori sebagai judul. \n";
-    $promptText .= "2. TOTAL KARAKTER ARTIKEL WAJIB ANTARA 3000 SAMPAI 5000 KARAKTER (tidak boleh kurang dari 3000). \n";
-    $promptText .= "3. Isi artikel harus sangat detail, menggunakan listicle, paragraf pendek, dan gaya bahasa 'Storytelling' yang menginspirasi. \n";
-    $promptText .= "4. Gunakan format HTML untuk konten (gunakan <h2>, <h3>, <p>, <ul>, <li>, <strong>). Jangan gunakan Markdown. \n";
-    $promptText .= "5. Output HANYA JSON murni tanpa markdown block. Format JSON: { \"title\": \"Judul Unik...\", \"content\": \"<p>Isi HTML panjang...</p>\", \"meta_desc\": \"Ringkasan 150 kata untuk SEO\", \"image_keywords\": \"keyword visual dalam bahasa inggris untuk pencarian gambar unsplash\" } ";
+    $promptText .= "Tugas: Buat satu artikel blog lengkap berdasarkan topik: '" . $broad_topic . "'. \n";
+    $promptText .= "Kriteria WAJIB: \n";
+    $promptText .= "1. Judul: Clickbait, emosional, dan unik (Jangan pakai judul standar). \n";
+    $promptText .= "2. Konten: Panjang minimum 2500 karakter. Gunakan format HTML (h2, h3, p, ul, li, strong). Gaya bahasa storytelling. \n";
+    $promptText .= "3. Meta Description: 150 karakter untuk SEO. \n";
+    $promptText .= "4. Image Keywords: 3 kata kunci bahasa inggris untuk pencarian gambar (comma separated). \n";
+    $promptText .= "Output WAJIB Format JSON: { \"title\": \"...\", \"content\": \"...\", \"meta_desc\": \"...\", \"image_keywords\": \"...\" }";
 
     $data = [
         "contents" => [
@@ -68,7 +66,15 @@ function generateAIArticle($broad_topic) {
         ],
         "generationConfig" => [
             "temperature" => 0.7,
-            "maxOutputTokens" => 8000 // Ensure enough tokens for long text
+            "maxOutputTokens" => 8000,
+            "responseMimeType" => "application/json" // Force JSON output for stability
+        ],
+        // Safety Settings to prevent blocking harmless 'Make Money' topics
+        "safetySettings" => [
+            [ "category" => "HARM_CATEGORY_HARASSMENT", "threshold" => "BLOCK_NONE" ],
+            [ "category" => "HARM_CATEGORY_HATE_SPEECH", "threshold" => "BLOCK_NONE" ],
+            [ "category" => "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold" => "BLOCK_NONE" ],
+            [ "category" => "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold" => "BLOCK_NONE" ]
         ]
     ];
 
@@ -77,37 +83,56 @@ function generateAIArticle($broad_topic) {
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    // Disable SSL verify temporarily if on local server/hosting with cert issues
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
     
     $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     
     if (curl_errno($ch)) {
-        return ['error' => 'Curl Error: ' . curl_error($ch)];
+        return ['error' => 'Curl Connection Error: ' . curl_error($ch)];
     }
     
     curl_close($ch);
 
     $result = json_decode($response, true);
 
+    // 3. Detailed Error Handling
+    if ($httpCode !== 200) {
+        $errorMsg = isset($result['error']['message']) ? $result['error']['message'] : 'Unknown API Error';
+        $errorCode = isset($result['error']['code']) ? $result['error']['code'] : $httpCode;
+        
+        if ($httpCode == 429) {
+            return ['error' => 'Quota Exceeded (Free Tier Limit). Coba lagi nanti.'];
+        }
+        return ['error' => "API Error ($errorCode): $errorMsg"];
+    }
+
+    // 4. Parse Result
     if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
         $rawText = $result['candidates'][0]['content']['parts'][0]['text'];
         
-        // Bersihkan markdown json block jika AI menyertakannya (```json ... ```)
+        // Native JSON response usually doesn't need regex cleanup, but just in case:
         $rawText = preg_replace('/^```json\s*|\s*```$/', '', trim($rawText));
         
         $jsonResult = json_decode($rawText, true);
         
         if (json_last_error() === JSON_ERROR_NONE) {
-            // Validasi panjang konten (Fallback check)
-            if (strlen($jsonResult['content']) < 2000) {
-                 // Jika AI generate terlalu pendek, kita tambahkan boilerplate footer untuk mencapai target
-                 $jsonResult['content'] .= "<hr><h3>Kesimpulan Penting</h3><p>Dalam perjalanan menjadi " . htmlspecialchars($broad_topic) . ", konsistensi adalah kunci. Jangan menyerah jika hasil belum terlihat instan. Terus belajar, adaptasi dengan algoritma, dan gunakan tools seperti Urat ID untuk mempercepat pertumbuhan Anda.</p><p>Semoga panduan tentang " . htmlspecialchars($jsonResult['title']) . " ini bermanfaat. Bagikan artikel ini kepada teman sesama kreator untuk saling mendukung ekosistem digital Indonesia.</p>";
+            // Content Length Check & Boilerplate Injection if too short
+            if (empty($jsonResult['content']) || strlen($jsonResult['content']) < 1500) {
+                 $jsonResult['content'] .= "<hr><h3>Kesimpulan</h3><p>Konsistensi adalah kunci keberhasilan di YouTube. Jangan menyerah jika belum melihat hasil instan. Gunakan strategi yang telah dibahas di atas dan manfaatkan fitur Urat ID untuk mempercepat pertumbuhan channel Anda.</p>";
             }
             return $jsonResult;
         } else {
-             return ['error' => 'Gagal parsing JSON dari AI. Raw: ' . substr($rawText, 0, 100) . '...'];
+             return ['error' => 'Gagal parsing JSON dari AI. Struktur respon tidak valid.'];
         }
     }
 
-    return ['error' => 'Gagal menghubungi AI atau Quota Habis.'];
+    // Check for Safety Blocking
+    if (isset($result['candidates'][0]['finishReason']) && $result['candidates'][0]['finishReason'] !== 'STOP') {
+        return ['error' => 'AI Blocked Content: ' . $result['candidates'][0]['finishReason']];
+    }
+
+    return ['error' => 'Respon AI kosong atau format tidak dikenali.'];
 }
 ?>
