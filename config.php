@@ -6,15 +6,22 @@ define('DB_NAME', 'sub4sub_db');
 define('DB_USER', 'root');
 define('DB_PASS', '');
 
-// API Configuration (Ensure these keys are valid or use Quota-Free fallbacks in functions.php)
+// API Configuration
 define('YOUTUBE_API_KEY', 'AIzaSyCNgREc0XJdaFSgWAZMmr51j6BBiBioxT8');
 
-// Business Logic
-define('MIN_CAMPAIGN_BALANCE', 1000); // Minimum balance to be shown in campaign
-define('PRICE_PER_SUB', 105); // Deducted from channel owner
-define('REWARD_PER_SUB', 52.5); // 50% of price given to subscriber
+// AI Configuration (Gemini)
+// Replace with your actual Gemini API Key
+define('GEMINI_API_KEY', 'YOUR_GEMINI_API_KEY_HERE'); 
 
-// Bank Details (Updated as per request)
+// Admin Security
+define('ADMIN_PASSWORD', 'Amnet123');
+
+// Business Logic
+define('MIN_CAMPAIGN_BALANCE', 1000);
+define('PRICE_PER_SUB', 105);
+define('REWARD_PER_SUB', 52.5);
+
+// Bank Details
 define('BANK_ACCOUNT_NUMBER', '227801010326500');
 define('BANK_NAME', 'BRI');
 define('BANK_HOLDER', 'Admin Sub4Sub');

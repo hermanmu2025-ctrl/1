@@ -1,43 +1,36 @@
-PANDUAN INSTALASI URAT ID (PREMIUM SEO & YOUTUBE ECOSYSTEM)
-===========================================================
+PANDUAN LENGKAP URAT ID V2.0
+============================
 
-1. PERSYARATAN SERVER
-   - PHP Versi 7.4 atau 8.x
-   - MySQL / MariaDB Database
-   - Ekstensi PHP: PDO, cURL, JSON
-   - Izin Tulis (Write Permission) pada folder root untuk upload gambar.
+1. INSTALASI DATABASE
+   - Upload semua file ke hosting (public_html).
+   - Buka browser: https://domainanda.com/install_db.php
+   - Jika sukses, HAPUS file install_db.php agar tidak di-reset orang lain.
 
-2. KONFIGURASI DATABASE & API
-   a. Buka file `config.php`.
-   b. Sesuaikan DB_HOST, DB_NAME, DB_USER, dan DB_PASS dengan hosting Anda.
-   c. Pastikan YOUTUBE_API_KEY valid. (Dapatkan di Google Cloud Console).
-   d. Anda dapat mengubah konstanta harga (PRICE_PER_SUB) jika diperlukan.
+2. KONFIGURASI ADMIN & AI
+   - Buka file `config.php`.
+   - Password Admin default: Amnet123 (sesuai request).
+   - Masukkan GEMINI_API_KEY di `config.php` agar fitur AI Blog Generator berfungsi.
+     (Ambil Key di: https://makersuite.google.com/app/apikey)
 
-3. INSTALASI DATABASE OTOMATIS
-   a. Upload semua file ke hosting (public_html).
-   b. Buka browser dan akses: https://website-anda.com/install_db.php
-   c. Jika muncul pesan "Tables created successfully", instalasi database selesai.
-   d. PENTING: Hapus file `install_db.php` setelah instalasi demi keamanan.
+3. FITUR ADMIN (Login di /admin_login.php)
+   - Approve Deposit: Cek bukti transfer, klik Approve. Saldo masuk otomatis ke user.
+   - Blog Generator: Masukkan topik (misal: "Cara Youtuber Pemula Sukses"). AI akan membuat:
+     a. Judul Clickbait
+     b. Artikel 3000-5000 karakter (SEO Optimized)
+     c. Gambar otomatis (menggunakan Unsplash API based on keywords)
+   - Edit/Hapus Post: Sekarang tersedia di dashboard admin.
 
-4. FOLDER UPLOADS
-   a. Pastikan folder `uploads/` dan `uploads/blog/` tersedia.
-   b. Jika tidak ada, buat folder tersebut dan set permission ke 755 atau 777.
+4. FITUR DEPOSIT
+   - User memiliki 2 opsi: Instant (QRIS Generated) dan Manual (Bank Transfer).
+   - QR Code di generate otomatis berdasarkan Rekening di config.php menggunakan API QRServer.
 
-5. SETTING CRON JOB (Sistem Keamanan & Penalti)
-   Sistem ini memiliki fitur proteksi otomatis jika user melakukan unsubscribe.
-   Setting Cron Job di cPanel:
-   - Waktu: Sekali per jam (0 * * * *)
+5. PANDUAN CRON JOB (Anti Unsub)
+   - Agar user didenda jika unsubscribe, pasang Cron Job di cPanel.
    - Command: /usr/local/bin/php /home/username/public_html/cron_protect.php
-   (Sesuaikan path PHP dan path file dengan hosting Anda).
+   - Set waktu: Per Jam (0 * * * *).
 
-6. CARA MENGGUNAKAN FITUR BLOG
-   a. Masuk ke halaman Admin (Pastikan logic login admin di admin.php disesuaikan dengan kebutuhan keamanan produksi, saat ini menggunakan session user biasa).
-   b. Gunakan form "Tulis Artikel Blog".
-   c. Isi Judul, Konten (bisa HTML sederhana), dan Upload Thumbnail.
-   d. Artikel akan otomatis muncul di Halaman Depan dan halaman Blog.
+6. TROUBLESHOOTING
+   - Jika AI Error: Pastikan hosting support `curl` dan API Key benar.
+   - Jika Gambar tidak muncul: Pastikan hosting support remote image fetching (allow_url_fopen).
 
-7. SECURITY NOTICE
-   - File `admin.php` saat ini hanya diproteksi cek session login sederhana. 
-   - Untuk Production, tambahkan kolom `role` di tabel users dan cek `if($user['role'] != 'admin') die('Access Denied');`.
-
-Selamat Menggunakan Urat ID!
+Terima kasih.
