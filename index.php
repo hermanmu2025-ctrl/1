@@ -349,61 +349,28 @@ include 'header.php';
     </section>
 </main>
 
-<!-- PREMIUM FOOTER -->
+<!-- PREMIUM FOOTER (CLEAN VERSION) -->
 <footer class="bg-slate-950 text-slate-300 pt-24 pb-10 border-t border-slate-900 font-sans">
-    <div class="container mx-auto px-6">
-        <div class="grid md:grid-cols-4 gap-12 mb-20">
-            <!-- Brand -->
-            <div class="col-span-1 md:col-span-1">
-                <a href="index.php" class="flex items-center gap-2 mb-6">
-                    <div class="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-                        <i data-lucide="zap" class="text-white w-6 h-6"></i>
-                    </div>
-                    <span class="text-2xl font-extrabold text-white tracking-tight">Urat<span class="text-blue-600">ID</span></span>
-                </a>
-                <p class="text-slate-500 text-sm leading-relaxed mb-6">
-                    Platform growth hacking YouTube #1 di Indonesia dengan teknologi keamanan mutakhir, fitur SEO AI, dan komunitas kreator terbesar.
-                </p>
-                <div class="flex gap-4">
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-blue-600 transition text-white"><i data-lucide="instagram" class="w-4 h-4"></i></a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-red-600 transition text-white"><i data-lucide="youtube" class="w-4 h-4"></i></a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-sky-500 transition text-white"><i data-lucide="twitter" class="w-4 h-4"></i></a>
+    <div class="container mx-auto px-6 flex flex-col items-center text-center">
+        <!-- Brand (Centered) -->
+        <div class="mb-12 max-w-lg">
+            <a href="index.php" class="flex items-center justify-center gap-2 mb-6">
+                <div class="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
+                    <i data-lucide="zap" class="text-white w-6 h-6"></i>
                 </div>
-            </div>
-            
-            <!-- Links -->
-            <div>
-                <h4 class="text-white font-bold mb-6">Menu Utama</h4>
-                <ul class="space-y-3 text-sm">
-                    <li><a href="#about" class="hover:text-blue-500 transition">Tentang Kami</a></li>
-                    <li><a href="#services" class="hover:text-blue-500 transition">Layanan</a></li>
-                    <li><a href="#features" class="hover:text-blue-500 transition">Keunggulan</a></li>
-                    <li><a href="blog.php" class="hover:text-blue-500 transition">Blog & Artikel</a></li>
-                </ul>
-            </div>
-            
-            <div>
-                <h4 class="text-white font-bold mb-6">Bantuan</h4>
-                <ul class="space-y-3 text-sm">
-                    <li><a href="#" class="hover:text-blue-500 transition">Syarat & Ketentuan</a></li>
-                    <li><a href="#" class="hover:text-blue-500 transition">Kebijakan Privasi</a></li>
-                    <li><a href="#" class="hover:text-blue-500 transition">Hubungi Kami</a></li>
-                    <li><a href="admin_login.php" class="hover:text-blue-500 transition">Login Admin</a></li>
-                </ul>
-            </div>
-
-            <!-- Newsletter -->
-            <div>
-                <h4 class="text-white font-bold mb-6">Berlangganan Tips</h4>
-                <p class="text-slate-500 text-xs mb-4">Dapatkan trik SEO Youtube terbaru.</p>
-                <form class="flex">
-                    <input type="email" placeholder="Email Anda" class="bg-slate-900 border border-slate-800 rounded-l-lg px-4 py-2 text-sm w-full outline-none focus:border-blue-600">
-                    <button class="bg-blue-600 px-4 rounded-r-lg hover:bg-blue-700 transition"><i data-lucide="send" class="w-4 h-4 text-white"></i></button>
-                </form>
+                <span class="text-2xl font-extrabold text-white tracking-tight">Urat<span class="text-blue-600">ID</span></span>
+            </a>
+            <p class="text-slate-500 text-sm leading-relaxed mb-6">
+                Platform growth hacking YouTube #1 di Indonesia dengan teknologi keamanan mutakhir, fitur SEO AI, dan komunitas kreator terbesar.
+            </p>
+            <div class="flex justify-center gap-4">
+                <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-blue-600 transition text-white"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+                <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-red-600 transition text-white"><i data-lucide="youtube" class="w-4 h-4"></i></a>
+                <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-sky-500 transition text-white"><i data-lucide="twitter" class="w-4 h-4"></i></a>
             </div>
         </div>
 
-        <div class="pt-8 border-t border-slate-900 text-center text-sm text-slate-600 flex flex-col md:flex-row justify-between items-center">
+        <div class="w-full pt-8 border-t border-slate-900 text-center text-sm text-slate-600 flex flex-col md:flex-row justify-between items-center">
             <p>&copy; <?= date('Y') ?> PT Urat Digital Indonesia. All rights reserved.</p>
             <p class="flex items-center gap-2 mt-4 md:mt-0">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> System Operational

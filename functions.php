@@ -1,6 +1,11 @@
 <?php
 require_once 'db.php';
 
+// Increase time limit for AI operations
+if (function_exists('set_time_limit')) {
+    set_time_limit(300); // 5 Minutes
+}
+
 function getChannelInfo($channelId) {
     $url = "https://www.googleapis.com/youtube/v3/channels?part=snippet,statistics&id=" . $channelId . "&key=" . YOUTUBE_API_KEY;
     $response = @file_get_contents($url);
@@ -36,7 +41,29 @@ function checkYoutubeSubscription($subscriberChannelId, $targetChannelId) {
     return true;
 }
 
-// --- SOVEREIGN AI INTELLIGENCE SUITE (v3.0 Auto-Discovery) ---
+// --- SOVEREIGN AI INTELLIGENCE SUITE (v3.1 Enhanced Stability) ---
+
+/**
+ * Extract JSON object from text that might contain markdown or other noise
+ */
+function extractJsonFromText($text) {
+    // 1. Try to find content between ```json and ```
+    if (preg_match('/```json\s*([\s\S]*?)\s*```/', $text, $matches)) {
+        return trim($matches[1]);
+    }
+    // 2. Try to find content between ``` and ```
+    if (preg_match('/```\s*([\s\S]*?)\s*```/', $text, $matches)) {
+        return trim($matches[1]);
+    }
+    // 3. Try to find the first '{' and last '}'
+    $start = strpos($text, '{');
+    $end = strrpos($text, '}');
+    if ($start !== false && $end !== false && $end > $start) {
+        return substr($text, $start, $end - $start + 1);
+    }
+    
+    return $text;
+}
 
 /**
  * Automatically fetches available Gemini models from Google API.
@@ -52,6 +79,7 @@ function getAvailableGeminiModels() {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
@@ -60,7 +88,7 @@ function getAvailableGeminiModels() {
 
     if ($httpCode === 200 && $response) {
         $data = json_decode($response, true);
-        if (isset($data['models'])) {
+        if (isset($data['models']) && is_array($data['models'])) {
             foreach ($data['models'] as $model) {
                 // Filter for content generation models only
                 if (isset($model['supportedGenerationMethods']) && in_array('generateContent', $model['supportedGenerationMethods'])) {
@@ -99,11 +127,11 @@ function generateAIArticle($broad_topic) {
     $promptText = "Bertindaklah sebagai Pakar SEO dan Content Creator YouTube Senior. \n";
     $promptText .= "Tugas: Buat satu artikel blog lengkap berdasarkan topik: '" . $broad_topic . "'. \n";
     $promptText .= "Kriteria WAJIB: \n";
-    $promptText .= "1. Judul: Clickbait, emosional, dan unik (Jangan pakai judul standar). \n";
+    $promptText .= "1. Judul: Clickbait, emosional, dan unik (Maksimal 100 karakter). \n";
     $promptText .= "2. Konten: Panjang minimum 2500 karakter. Gunakan format HTML (h2, h3, p, ul, li, strong, blockquote). Gaya bahasa storytelling yang mengalir. \n";
     $promptText .= "3. Meta Description: 150 karakter untuk SEO. \n";
     $promptText .= "4. Image Keywords: 3 kata kunci bahasa inggris untuk pencarian gambar (comma separated). \n";
-    $promptText .= "Output WAJIB Format JSON Murni tanpa markdown code block: { \"title\": \"...\", \"content\": \"...\", \"meta_desc\": \"...\", \"image_keywords\": \"...\" }";
+    $promptText .= "Output WAJIB Format JSON VALID RFC8259 tanpa markdown code block. Struktur: { \"title\": \"...\", \"content\": \"...\", \"meta_desc\": \"...\", \"image_keywords\": \"...\" }";
 
     $data = [
         "contents" => [
@@ -127,7 +155,11 @@ function generateAIArticle($broad_topic) {
     ];
 
     $lastError = '';
-    $successModel = '';
+    
+    // Ensure we have a valid array of models
+    if (!is_array($models) || empty($models)) {
+        $models = ['gemini-1.5-flash'];
+    }
 
     foreach ($models as $model) {
         $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/" . $model . ":generateContent?key=" . GEMINI_API_KEY;
@@ -138,7 +170,7 @@ function generateAIArticle($broad_topic) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // Prevent hang
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60); // Increased timeout
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -158,9 +190,7 @@ function generateAIArticle($broad_topic) {
             $lastError = "API Error $httpCode ($model): $apiMsg";
             
             if ($httpCode == 429) {
-                // Rate limit hit, maybe break or continue depending on strategy. 
-                // Continuing to next model is better as different models might have different quotas.
-                continue;
+                continue; // Rate limit hit
             }
             continue;
         }
@@ -169,11 +199,9 @@ function generateAIArticle($broad_topic) {
         if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
             $rawText = $result['candidates'][0]['content']['parts'][0]['text'];
             
-            // Clean Markdown JSON wrapping if present
-            $rawText = preg_replace('/^```json\s*|\s*```$/', '', trim($rawText));
-            $rawText = preg_replace('/^```\s*|\s*```$/', '', trim($rawText));
-            
-            $jsonResult = json_decode($rawText, true);
+            // Improved JSON Cleaning
+            $cleanJson = extractJsonFromText($rawText);
+            $jsonResult = json_decode($cleanJson, true);
             
             if (json_last_error() === JSON_ERROR_NONE && !empty($jsonResult['content'])) {
                 // Content Injection for length assurance and internal linking
@@ -183,7 +211,7 @@ function generateAIArticle($broad_topic) {
                 $jsonResult['used_model'] = $model; // Track which model worked
                 return $jsonResult; // Success return
             } else {
-                $lastError = "JSON Parse Error ($model)";
+                $lastError = "JSON Parse Error ($model): " . json_last_error_msg();
             }
         }
     }

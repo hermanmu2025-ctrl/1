@@ -28,7 +28,7 @@ if (isset($_GET['approve_deposit'])) {
             $success_msg = "Deposit disetujui.";
         } catch(Exception $e) {
             $pdo->rollBack();
-            $error_msg = "Error database.";
+            $error_msg = "Error database: " . $e->getMessage();
         }
     }
 }
@@ -51,32 +51,48 @@ if (isset($_POST['update_post'])) {
 
 // 4. TRIGGER AUTO POST (MANUAL OVERRIDE)
 if (isset($_POST['trigger_auto_ai'])) {
-    $allowed_topics = AI_TARGET_KEYWORDS;
-    $random_index = array_rand($allowed_topics);
-    $selected_topic = $allowed_topics[$random_index];
+    try {
+        // Validate Constants
+        if (!defined('AI_TARGET_KEYWORDS') || !is_array(AI_TARGET_KEYWORDS) || empty(AI_TARGET_KEYWORDS)) {
+            throw new Exception("Konfigurasi AI_TARGET_KEYWORDS di config.php tidak valid atau kosong.");
+        }
 
-    $aiResult = generateAIArticle($selected_topic);
-    
-    if (isset($aiResult['error'])) {
-        $error_msg = "AI Error: " . $aiResult['error'];
-    } else {
-        $title = $aiResult['title'];
-        $content = $aiResult['content'];
-        $meta_desc = $aiResult['meta_desc'] ?? '';
-        $used_model = $aiResult['used_model'] ?? 'Unknown Model';
-        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
-        
-        // Validasi Duplicate Slug
-        $checkSlug = $pdo->prepare("SELECT id FROM posts WHERE slug = ?");
-        $checkSlug->execute([$slug]);
-        if ($checkSlug->rowCount() > 0) $slug .= '-' . time();
+        $allowed_topics = AI_TARGET_KEYWORDS;
+        $random_index = array_rand($allowed_topics);
+        $selected_topic = $allowed_topics[$random_index];
 
-        $image_keywords = urlencode($aiResult['image_keywords'] ?? 'technology');
-        $thumb_url = "https://source.unsplash.com/1200x800/?" . $image_keywords . "&sig=" . time();
+        $aiResult = generateAIArticle($selected_topic);
         
-        $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail, meta_desc) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$title, $slug, $content, $thumb_url, $meta_desc]);
-        $success_msg = "Artikel Otomatis berhasil dibuat menggunakan model <strong>$used_model</strong> dengan topik: $selected_topic";
+        if (isset($aiResult['error'])) {
+            $error_msg = "AI Error: " . $aiResult['error'];
+        } else {
+            $title = $aiResult['title'] ?? 'Tanpa Judul';
+            $content = $aiResult['content'] ?? '<p>Konten Kosong</p>';
+            $meta_desc = $aiResult['meta_desc'] ?? '';
+            $used_model = $aiResult['used_model'] ?? 'Unknown Model';
+            
+            // Sanitize Title Length (DB Limit)
+            if (strlen($title) > 250) {
+                $title = substr($title, 0, 247) . '...';
+            }
+            
+            $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
+            
+            // Validasi Duplicate Slug
+            $checkSlug = $pdo->prepare("SELECT id FROM posts WHERE slug = ?");
+            $checkSlug->execute([$slug]);
+            if ($checkSlug->rowCount() > 0) $slug .= '-' . time();
+
+            $image_keywords = urlencode($aiResult['image_keywords'] ?? 'technology');
+            // Used picsum instead of unsplash source (deprecated)
+            $thumb_url = "https://picsum.photos/1200/800?random=" . time();
+            
+            $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail, meta_desc) VALUES (?, ?, ?, ?, ?)");
+            $stmt->execute([$title, $slug, $content, $thumb_url, $meta_desc]);
+            $success_msg = "Artikel Otomatis berhasil dibuat menggunakan model <strong>$used_model</strong> dengan topik: $selected_topic";
+        }
+    } catch (Exception $e) {
+        $error_msg = "System Error: " . $e->getMessage();
     }
 }
 
@@ -89,12 +105,15 @@ if (isset($_POST['post_article'])) {
     $target_dir = "uploads/blog/";
     if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
     $filename = time() . "_" . basename($_FILES["thumbnail"]["name"]);
-    move_uploaded_file($_FILES["thumbnail"]["tmp_name"], $target_dir . $filename);
-    $thumb_url = $target_dir . $filename;
-
-    $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail) VALUES (?, ?, ?, ?)");
-    $stmt->execute([$title, $slug, $content, $thumb_url]);
-    $success_msg = "Artikel manual dipublish.";
+    
+    if (move_uploaded_file($_FILES["thumbnail"]["tmp_name"], $target_dir . $filename)) {
+        $thumb_url = $target_dir . $filename;
+        $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$title, $slug, $content, $thumb_url]);
+        $success_msg = "Artikel manual dipublish.";
+    } else {
+        $error_msg = "Gagal upload gambar.";
+    }
 }
 
 // Data Fetching
