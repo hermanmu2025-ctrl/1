@@ -49,10 +49,14 @@ if (isset($_POST['update_post'])) {
     $success_msg = "Postingan berhasil diupdate.";
 }
 
-// 4. AI Generate Post
-if (isset($_POST['generate_ai'])) {
-    $topic = trim($_POST['topic']);
-    $aiResult = generateAIArticle($topic);
+// 4. TRIGGER AUTO POST (MANUAL OVERRIDE)
+if (isset($_POST['trigger_auto_ai'])) {
+    // Kita gunakan logika yang sama dengan cron_auto_post.php tapi dijalankan manual via admin
+    $allowed_topics = AI_TARGET_KEYWORDS;
+    $random_index = array_rand($allowed_topics);
+    $selected_topic = $allowed_topics[$random_index];
+
+    $aiResult = generateAIArticle($selected_topic);
     
     if (isset($aiResult['error'])) {
         $error_msg = "AI Error: " . $aiResult['error'];
@@ -62,14 +66,17 @@ if (isset($_POST['generate_ai'])) {
         $meta_desc = $aiResult['meta_desc'] ?? '';
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
         
-        // Simulate AI Image Generation using Keyword-based Placeholder (Unsplash Source)
+        // Validasi Duplicate Slug
+        $checkSlug = $pdo->prepare("SELECT id FROM posts WHERE slug = ?");
+        $checkSlug->execute([$slug]);
+        if ($checkSlug->rowCount() > 0) $slug .= '-' . time();
+
         $image_keywords = urlencode($aiResult['image_keywords'] ?? 'technology');
-        $thumb_url = "https://source.unsplash.com/800x600/?" . $image_keywords;
+        $thumb_url = "https://source.unsplash.com/1200x800/?" . $image_keywords . "&sig=" . time();
         
-        // Save to DB
         $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail, meta_desc) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$title, $slug, $content, $thumb_url, $meta_desc]);
-        $success_msg = "Artikel AI berhasil dibuat: $title";
+        $success_msg = "Artikel Otomatis (Auto-Logic) berhasil dibuat dengan topik: $selected_topic";
     }
 }
 
@@ -116,16 +123,30 @@ include 'header.php';
     <!-- TABS -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        <!-- AI GENERATOR -->
+        <!-- AI GENERATOR (UPDATED LOGIC) -->
         <div class="glass-panel p-8 rounded-3xl border border-purple-200 bg-gradient-to-br from-white to-purple-50/50">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-purple-700">
-                <i data-lucide="bot" class="w-6 h-6"></i> AI Blog Generator (Gemini)
-            </h2>
-            <p class="text-sm text-slate-500 mb-6">Otomatis membuat artikel SEO 3000+ karakter, judul marketing, dan gambar.</p>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center shadow-lg shadow-purple-600/30">
+                     <i data-lucide="bot" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-purple-900">AI Auto-Pilot</h2>
+                    <p class="text-xs text-purple-600 font-bold">System v2.0</p>
+                </div>
+            </div>
+            
+            <p class="text-sm text-slate-600 mb-6 leading-relaxed">
+                Sistem akan secara otomatis memilih topik dari daftar wajib:
+                <span class="font-mono text-xs bg-slate-100 p-1 rounded">Youtuber Pemula, Jasa SEO, dll.</span><br>
+                Artikel dibuat <strong>3000-5000 karakter</strong> lengkap dengan gambar.
+            </p>
+
             <form method="POST" class="space-y-4">
-                <input type="text" name="topic" required placeholder="Contoh: Cara Menambah 1000 Subscriber Youtube Cepat" class="w-full p-4 rounded-xl border border-purple-200 focus:ring-2 focus:ring-purple-500 outline-none shadow-sm">
-                <button type="submit" name="generate_ai" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl transition flex justify-center items-center gap-2 shadow-lg shadow-purple-600/20">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i> Generate Article Now
+                 <div class="bg-yellow-50 border border-yellow-100 p-4 rounded-xl text-xs text-yellow-700 mb-4">
+                     <strong>Info:</strong> Fitur ini berjalan otomatis setiap hari via Cron Job. Tombol di bawah ini untuk memaksa AI membuat artikel SEKARANG (Manual Trigger).
+                 </div>
+                <button type="submit" name="trigger_auto_ai" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl transition flex justify-center items-center gap-2 shadow-lg shadow-purple-600/20">
+                    <i data-lucide="zap" class="w-4 h-4"></i> Jalankan AI Sekarang (Random Topic)
                 </button>
             </form>
         </div>
@@ -182,7 +203,10 @@ include 'header.php';
                 <tbody>
                     <?php foreach($posts as $post): ?>
                     <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                        <td class="py-4 font-medium text-slate-700"><?= htmlspecialchars($post['title']) ?></td>
+                        <td class="py-4 font-medium text-slate-700">
+                            <?= htmlspecialchars($post['title']) ?>
+                            <div class="text-[10px] text-slate-400 font-mono mt-1">Slug: <?= $post['slug'] ?></div>
+                        </td>
                         <td class="text-right flex justify-end gap-2 py-4">
                             <!-- Edit Button -->
                             <button onclick="document.getElementById('edit-<?= $post['id'] ?>').style.display='flex'" class="bg-yellow-50 text-yellow-600 px-3 py-1.5 rounded-lg text-xs font-bold border border-yellow-200 hover:bg-yellow-100">Edit</button>

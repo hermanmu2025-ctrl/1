@@ -13,6 +13,17 @@ define('YOUTUBE_API_KEY', 'AIzaSyCNgREc0XJdaFSgWAZMmr51j6BBiBioxT8');
 // Replace with your actual Gemini API Key
 define('GEMINI_API_KEY', 'YOUR_GEMINI_API_KEY_HERE'); 
 
+// AI Logic Configuration
+// Daftar topik wajib sesuai instruksi
+define('AI_TARGET_KEYWORDS', [
+    'Youtuber Pemula',
+    'Youtuber Sukses',
+    'Jasa Seo',
+    'Jasa Membuat website',
+    'Subscriber Youtube Gratis',
+    'Cara Menghasilkan Uang di internet'
+]);
+
 // Admin Security
 define('ADMIN_PASSWORD', 'Amnet123');
 

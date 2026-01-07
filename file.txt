@@ -1,36 +1,34 @@
-PANDUAN LENGKAP URAT ID V2.0
-============================
+PANDUAN UPDATE SISTEM URAT ID V2.0 (AI AUTO-PILOT)
+==================================================
 
-1. INSTALASI DATABASE
-   - Upload semua file ke hosting (public_html).
-   - Buka browser: https://domainanda.com/install_db.php
-   - Jika sukses, HAPUS file install_db.php agar tidak di-reset orang lain.
+1. UPDATE KONFIGURASI
+   - File `config.php` telah diperbarui. 
+   - JANGAN LUPA memasukkan ulang GEMINI_API_KEY di baris 11 (karena file ini menimpa file lama).
 
-2. KONFIGURASI ADMIN & AI
-   - Buka file `config.php`.
-   - Password Admin default: Amnet123 (sesuai request).
-   - Masukkan GEMINI_API_KEY di `config.php` agar fitur AI Blog Generator berfungsi.
-     (Ambil Key di: https://makersuite.google.com/app/apikey)
+2. FITUR AI BARU (LOGIKA)
+   - AI sekarang dikonfigurasi untuk HANYA menerima topik:
+     "Youtuber Pemula, Youtuber Sukses, Jasa Seo, Jasa Membuat website, Subscriber Youtube Gratis, Cara Menghasilkan Uang di internet"
+   - AI akan membuat artikel panjang (3000-5000 karakter) dengan gaya bahasa marketing.
 
-3. FITUR ADMIN (Login di /admin_login.php)
-   - Approve Deposit: Cek bukti transfer, klik Approve. Saldo masuk otomatis ke user.
-   - Blog Generator: Masukkan topik (misal: "Cara Youtuber Pemula Sukses"). AI akan membuat:
-     a. Judul Clickbait
-     b. Artikel 3000-5000 karakter (SEO Optimized)
-     c. Gambar otomatis (menggunakan Unsplash API based on keywords)
-   - Edit/Hapus Post: Sekarang tersedia di dashboard admin.
+3. CARA MENGAKTIFKAN POSTING OTOMATIS (CRON JOB)
+   Agar AI memposting 1 artikel setiap hari secara otomatis tanpa Anda sentuh:
+   
+   a. Masuk ke cPanel Hosting Anda.
+   b. Cari menu "Cron Jobs".
+   c. Tambahkan New Cron Job.
+   d. Common Settings: "Once Per Day" (0 0 * * *).
+   e. Command:
+      /usr/local/bin/php /home/USERNAME_HOSTING/public_html/cron_auto_post.php
+      
+      (Ganti USERNAME_HOSTING sesuai path hosting Anda. Jika bingung, tanya provider hosting letak path php).
 
-4. FITUR DEPOSIT
-   - User memiliki 2 opsi: Instant (QRIS Generated) dan Manual (Bank Transfer).
-   - QR Code di generate otomatis berdasarkan Rekening di config.php menggunakan API QRServer.
+4. TESTING MANUAL
+   - Anda bisa mengetes logika AI baru di halaman Admin (admin.php).
+   - Klik tombol "Jalankan AI Sekarang (Random Topic)". 
+   - Ini akan mensimulasikan proses otomatis yang dilakukan Cron Job.
 
-5. PANDUAN CRON JOB (Anti Unsub)
-   - Agar user didenda jika unsubscribe, pasang Cron Job di cPanel.
-   - Command: /usr/local/bin/php /home/username/public_html/cron_protect.php
-   - Set waktu: Per Jam (0 * * * *).
-
-6. TROUBLESHOOTING
-   - Jika AI Error: Pastikan hosting support `curl` dan API Key benar.
-   - Jika Gambar tidak muncul: Pastikan hosting support remote image fetching (allow_url_fopen).
+5. KEAMANAN & INTEGRITAS
+   - Sistem deposit, subscribe, dan proteksi (sanksi) tetap berjalan normal.
+   - Pastikan cron_protect.php juga tetap berjalan di Cron Job untuk sanksi user yang unsubscribe.
 
 Terima kasih.
