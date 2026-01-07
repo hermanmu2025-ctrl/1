@@ -18,17 +18,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['channel_id'])) {
             $user = $stmt->fetch();
             
             if (!$user) {
-                $stmt = $pdo->prepare("INSERT INTO users (channel_id, channel_name, avatar_url) VALUES (?, ?, ?)");
-                $stmt->execute([$channel_id, $channel_name, $avatar]);
-                $user_id = $pdo->lastInsertId();
+                // --- NEW USER REGISTRATION WITH WELCOME BONUS ---
+                try {
+                    $pdo->beginTransaction();
+
+                    // 1. Create User with Bonus Balance
+                    $stmt = $pdo->prepare("INSERT INTO users (channel_id, channel_name, avatar_url, balance) VALUES (?, ?, ?, ?)");
+                    $stmt->execute([$channel_id, $channel_name, $avatar, WELCOME_BONUS]);
+                    $user_id = $pdo->lastInsertId();
+
+                    // 2. Log Welcome Transaction
+                    $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, status) VALUES (?, 'deposit', ?, 'Welcome Bonus (New User)', 'completed')");
+                    $stmt->execute([$user_id, WELCOME_BONUS]);
+
+                    $pdo->commit();
+                } catch (Exception $e) {
+                    $pdo->rollBack();
+                    $error = "System Error: Gagal registrasi user baru.";
+                }
             } else {
+                // Update Existing User
                 $user_id = $user['id'];
                 $pdo->prepare("UPDATE users SET channel_name=?, avatar_url=? WHERE id=?")->execute([$channel_name, $avatar, $user_id]);
             }
-            $_SESSION['user_id'] = $user_id;
-            $_SESSION['channel_id'] = $channel_id;
-            header("Location: dashboard.php");
-            exit;
+
+            if (empty($error)) {
+                $_SESSION['user_id'] = $user_id;
+                $_SESSION['channel_id'] = $channel_id;
+                header("Location: dashboard.php");
+                exit;
+            }
         } else {
             $error = "Channel tidak ditemukan. Pastikan ID benar.";
         }
@@ -65,7 +84,7 @@ include 'header.php';
                         </div>
                         <div>
                              <h3 class="text-lg font-bold text-slate-800">Akses Dashboard</h3>
-                             <p class="text-slate-400 text-xs">Gratis pendaftaran selamanya</p>
+                             <p class="text-slate-400 text-xs">Gratis Saldo <?= formatRupiah(WELCOME_BONUS) ?> untuk User Baru</p>
                         </div>
                     </div>
                     

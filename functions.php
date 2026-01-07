@@ -36,25 +36,27 @@ function checkYoutubeSubscription($subscriberChannelId, $targetChannelId) {
     return true;
 }
 
-// --- UPDATED AI LOGIC (FIXED FOR FREE TIER & AUTOMATION) ---
+// --- SOVEREIGN AI CONTENT STUDIO (v2.1 Stable) ---
+// Features: Multi-Model Fallback, Auto-Retry, JSON Enforcing
 function generateAIArticle($broad_topic) {
     // 1. Validate API Key
     if (!defined('GEMINI_API_KEY') || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || empty(GEMINI_API_KEY)) {
         return ['error' => 'API Key Gemini belum dikonfigurasi di config.php'];
     }
 
-    $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . GEMINI_API_KEY;
-    
-    // 2. Optimized Prompt for Free Tier
-    // Removed complex formatting instructions that might confuse the model, relying on JSON schema instead.
+    // List of models to try in order of preference
+    // First: gemini-1.5-flash (Fast & Free Tier friendly)
+    // Fallback: gemini-pro (Stable v1.0 model)
+    $models = ['gemini-1.5-flash', 'gemini-pro'];
+
     $promptText = "Bertindaklah sebagai Pakar SEO dan Content Creator YouTube Senior. \n";
     $promptText .= "Tugas: Buat satu artikel blog lengkap berdasarkan topik: '" . $broad_topic . "'. \n";
     $promptText .= "Kriteria WAJIB: \n";
     $promptText .= "1. Judul: Clickbait, emosional, dan unik (Jangan pakai judul standar). \n";
-    $promptText .= "2. Konten: Panjang minimum 2500 karakter. Gunakan format HTML (h2, h3, p, ul, li, strong). Gaya bahasa storytelling. \n";
+    $promptText .= "2. Konten: Panjang minimum 2000 karakter. Gunakan format HTML (h2, h3, p, ul, li, strong). Gaya bahasa storytelling yang mengalir. \n";
     $promptText .= "3. Meta Description: 150 karakter untuk SEO. \n";
     $promptText .= "4. Image Keywords: 3 kata kunci bahasa inggris untuk pencarian gambar (comma separated). \n";
-    $promptText .= "Output WAJIB Format JSON: { \"title\": \"...\", \"content\": \"...\", \"meta_desc\": \"...\", \"image_keywords\": \"...\" }";
+    $promptText .= "Output WAJIB Format JSON Murni tanpa markdown: { \"title\": \"...\", \"content\": \"...\", \"meta_desc\": \"...\", \"image_keywords\": \"...\" }";
 
     $data = [
         "contents" => [
@@ -67,9 +69,8 @@ function generateAIArticle($broad_topic) {
         "generationConfig" => [
             "temperature" => 0.7,
             "maxOutputTokens" => 8000,
-            "responseMimeType" => "application/json" // Force JSON output for stability
+             // Note: responseMimeType is supported in newer models, removed here for broader compatibility with gemini-pro fallback
         ],
-        // Safety Settings to prevent blocking harmless 'Make Money' topics
         "safetySettings" => [
             [ "category" => "HARM_CATEGORY_HARASSMENT", "threshold" => "BLOCK_NONE" ],
             [ "category" => "HARM_CATEGORY_HATE_SPEECH", "threshold" => "BLOCK_NONE" ],
@@ -78,61 +79,63 @@ function generateAIArticle($broad_topic) {
         ]
     ];
 
-    $ch = curl_init($apiUrl);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-    // Disable SSL verify temporarily if on local server/hosting with cert issues
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
-    
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    
-    if (curl_errno($ch)) {
-        return ['error' => 'Curl Connection Error: ' . curl_error($ch)];
-    }
-    
-    curl_close($ch);
+    $lastError = '';
 
-    $result = json_decode($response, true);
-
-    // 3. Detailed Error Handling
-    if ($httpCode !== 200) {
-        $errorMsg = isset($result['error']['message']) ? $result['error']['message'] : 'Unknown API Error';
-        $errorCode = isset($result['error']['code']) ? $result['error']['code'] : $httpCode;
+    foreach ($models as $model) {
+        $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/" . $model . ":generateContent?key=" . GEMINI_API_KEY;
         
-        if ($httpCode == 429) {
-            return ['error' => 'Quota Exceeded (Free Tier Limit). Coba lagi nanti.'];
+        $ch = curl_init($apiUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErr = curl_error($ch);
+        curl_close($ch);
+
+        if ($curlErr) {
+            $lastError = "Curl Error ($model): $curlErr";
+            continue; // Try next model
         }
-        return ['error' => "API Error ($errorCode): $errorMsg"];
-    }
 
-    // 4. Parse Result
-    if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
-        $rawText = $result['candidates'][0]['content']['parts'][0]['text'];
-        
-        // Native JSON response usually doesn't need regex cleanup, but just in case:
-        $rawText = preg_replace('/^```json\s*|\s*```$/', '', trim($rawText));
-        
-        $jsonResult = json_decode($rawText, true);
-        
-        if (json_last_error() === JSON_ERROR_NONE) {
-            // Content Length Check & Boilerplate Injection if too short
-            if (empty($jsonResult['content']) || strlen($jsonResult['content']) < 1500) {
-                 $jsonResult['content'] .= "<hr><h3>Kesimpulan</h3><p>Konsistensi adalah kunci keberhasilan di YouTube. Jangan menyerah jika belum melihat hasil instan. Gunakan strategi yang telah dibahas di atas dan manfaatkan fitur Urat ID untuk mempercepat pertumbuhan channel Anda.</p>";
+        $result = json_decode($response, true);
+
+        if ($httpCode !== 200) {
+            $apiMsg = isset($result['error']['message']) ? $result['error']['message'] : 'Unknown API Error';
+            $lastError = "API Error $httpCode ($model): $apiMsg";
+            
+            // If 404 (Model not found) or 400 (Bad Request), try next model.
+            // If 429 (Quota), stop immediately to avoid ban.
+            if ($httpCode == 429) {
+                return ['error' => 'Quota Exceeded (Free Tier Limit). Try again later.'];
             }
-            return $jsonResult;
-        } else {
-             return ['error' => 'Gagal parsing JSON dari AI. Struktur respon tidak valid.'];
+            continue; // Try next model
+        }
+
+        // Success Parsing
+        if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
+            $rawText = $result['candidates'][0]['content']['parts'][0]['text'];
+            
+            // Clean Markdown JSON wrapping if present
+            $rawText = preg_replace('/^```json\s*|\s*```$/', '', trim($rawText));
+            $rawText = preg_replace('/^```\s*|\s*```$/', '', trim($rawText));
+            
+            $jsonResult = json_decode($rawText, true);
+            
+            if (json_last_error() === JSON_ERROR_NONE && !empty($jsonResult['content'])) {
+                // Content Injection for length assurance
+                if (strlen($jsonResult['content']) < 1000) {
+                     $jsonResult['content'] .= "<hr><h3>Kesimpulan</h3><p>Konsistensi adalah kunci keberhasilan di YouTube. Jangan menyerah jika belum melihat hasil instan. Gunakan strategi yang telah dibahas di atas dan manfaatkan fitur Urat ID untuk mempercepat pertumbuhan channel Anda.</p>";
+                }
+                return $jsonResult; // Success return
+            }
         }
     }
 
-    // Check for Safety Blocking
-    if (isset($result['candidates'][0]['finishReason']) && $result['candidates'][0]['finishReason'] !== 'STOP') {
-        return ['error' => 'AI Blocked Content: ' . $result['candidates'][0]['finishReason']];
-    }
-
-    return ['error' => 'Respon AI kosong atau format tidak dikenali.'];
+    // If loop finishes without return
+    return ['error' => "Sovereign AI Failed. Details: $lastError"];
 }
 ?>

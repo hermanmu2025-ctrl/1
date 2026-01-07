@@ -32,6 +32,9 @@ define('MIN_CAMPAIGN_BALANCE', 1000);
 define('PRICE_PER_SUB', 105);
 define('REWARD_PER_SUB', 52.5);
 
+// New Feature: User Welcome Bonus
+define('WELCOME_BONUS', 1000);
+
 // Bank Details
 define('BANK_ACCOUNT_NUMBER', '227801010326500');
 define('BANK_NAME', 'BRI');
