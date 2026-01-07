@@ -17,21 +17,30 @@ $histStmt = $pdo->prepare("SELECT * FROM transactions WHERE user_id = ? ORDER BY
 $histStmt->execute([$user['id']]);
 $history = $histStmt->fetchAll();
 
-$page_title = "Dashboard User";
+$page_title = "Dashboard Premium";
 include 'header.php';
 ?>
 
 <div class="container mx-auto p-6 max-w-7xl py-12">
     
     <!-- Welcome Banner -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-        <div>
-            <h1 class="text-3xl font-bold text-slate-800 tracking-tight">Halo, <?= htmlspecialchars($user['channel_name']) ?>! 👋</h1>
-            <p class="text-slate-500 font-medium">Selamat datang di pusat kendali channel Anda.</p>
+    <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
+        <div class="flex items-center gap-6">
+             <div class="relative">
+                 <img src="<?= $user['avatar_url'] ?>" class="w-20 h-20 rounded-full border-4 border-slate-50 shadow-md">
+                 <div class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-4 border-white rounded-full"></div>
+             </div>
+             <div>
+                <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Halo, <?= htmlspecialchars($user['channel_name']) ?>! 👋</h1>
+                <p class="text-slate-500 text-sm font-medium">User ID: <span class="font-mono bg-slate-100 px-2 py-0.5 rounded"><?= substr($user['channel_id'], 0, 10) ?>...</span></p>
+            </div>
         </div>
-        <div class="flex gap-3">
-            <a href="deposit.php" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition flex items-center gap-2">
+        <div class="flex gap-3 w-full md:w-auto">
+            <a href="deposit.php" class="flex-1 md:flex-none text-center bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition flex items-center justify-center gap-2">
                 <i data-lucide="wallet" class="w-4 h-4"></i> Isi Saldo
+            </a>
+            <a href="index.php#services" class="flex-1 md:flex-none text-center bg-white border border-slate-200 text-slate-700 px-6 py-3 rounded-xl font-bold hover:bg-slate-50 transition">
+                Beli Layanan
             </a>
         </div>
     </div>
@@ -39,7 +48,7 @@ include 'header.php';
     <?php if($promo): ?>
     <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 rounded-2xl shadow-xl shadow-purple-200 text-white mb-10 flex items-start gap-5 relative overflow-hidden">
         <div class="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
-        <div class="bg-white/20 p-3 rounded-xl backdrop-blur">
+        <div class="bg-white/20 p-3 rounded-xl backdrop-blur shrink-0">
             <i data-lucide="megaphone" class="w-6 h-6 text-white"></i>
         </div>
         <div class="relative z-10">
@@ -53,29 +62,16 @@ include 'header.php';
         <!-- LEFT SIDE: Stats & Personal -->
         <div class="space-y-8">
             <!-- Stats Card -->
-            <div class="glass-panel p-8 rounded-3xl relative overflow-hidden">
-                 <div class="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-10 -mt-10 z-0"></div>
-                 
-                <div class="flex items-center gap-4 mb-8 relative z-10">
-                    <div class="p-1 bg-white rounded-full shadow-md">
-                        <img src="<?= $user['avatar_url'] ?>" class="w-16 h-16 rounded-full border-2 border-slate-100">
-                    </div>
-                    <div>
-                        <h2 class="font-bold text-lg truncate w-40 text-slate-800"><?= htmlspecialchars($user['channel_name']) ?></h2>
-                        <div class="flex items-center gap-1 text-[10px] text-slate-400 font-mono bg-slate-100 px-2 py-1 rounded w-fit">
-                             ID: <?= substr($user['channel_id'], 0, 10) ?>...
-                        </div>
-                    </div>
-                </div>
-                
+            <div class="bg-white border border-slate-100 p-8 rounded-3xl relative overflow-hidden shadow-lg shadow-slate-200/40">
+                <h3 class="font-bold text-slate-800 mb-6">Statistik Akun</h3>
                 <div class="grid grid-cols-2 gap-4 text-center relative z-10">
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 group hover:border-blue-200 transition">
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Saldo</p>
-                        <p class="font-extrabold text-blue-600 text-lg group-hover:scale-105 transition"><?= formatRupiah($user['balance']) ?></p>
+                    <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 group">
+                        <p class="text-xs text-blue-600 font-bold uppercase tracking-wider mb-2">Saldo Aktif</p>
+                        <p class="font-extrabold text-blue-700 text-xl group-hover:scale-105 transition"><?= formatRupiah($user['balance']) ?></p>
                     </div>
-                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 group hover:border-purple-200 transition">
-                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-2">Total Subs</p>
-                        <p class="font-extrabold text-purple-600 text-lg group-hover:scale-105 transition">+<?= $user['total_subs_gained'] ?></p>
+                    <div class="bg-purple-50 p-5 rounded-2xl border border-purple-100 group">
+                        <p class="text-xs text-purple-600 font-bold uppercase tracking-wider mb-2">Subs Didapat</p>
+                        <p class="font-extrabold text-purple-700 text-xl group-hover:scale-105 transition">+<?= $user['total_subs_gained'] ?></p>
                     </div>
                 </div>
             </div>
@@ -83,7 +79,7 @@ include 'header.php';
             <!-- Recent Activity -->
             <div class="glass-panel p-8 rounded-3xl">
                 <h3 class="font-bold text-slate-800 mb-6 flex items-center gap-2">
-                    <i data-lucide="history" class="w-5 h-5 text-slate-400"></i> Mutasi Terakhir
+                    <i data-lucide="history" class="w-5 h-5 text-slate-400"></i> Transaksi Terakhir
                 </h3>
                 <div class="space-y-6">
                     <?php foreach($history as $h): ?>
@@ -119,16 +115,18 @@ include 'header.php';
 
         <!-- RIGHT SIDE: Campaigns -->
         <div class="lg:col-span-2">
-            <div class="glass-panel p-8 rounded-3xl min-h-[500px]">
-                <div class="flex justify-between items-center mb-8">
+            <div class="bg-white border border-slate-200 shadow-xl shadow-slate-200/30 p-8 rounded-3xl min-h-[500px]">
+                <div class="flex justify-between items-center mb-8 border-b border-slate-100 pb-4">
                     <div>
                         <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                             <span class="bg-red-50 text-red-600 p-2 rounded-lg"><i data-lucide="youtube" class="w-5 h-5"></i></span>
-                            Misi Tersedia
+                            Misi Subscribe & Earn
                         </h2>
-                        <p class="text-slate-500 text-xs mt-1">Selesaikan misi untuk mendapatkan saldo gratis.</p>
+                        <p class="text-slate-500 text-xs mt-1">Dapatkan <span class="text-green-600 font-bold"><?= formatRupiah(REWARD_PER_SUB) ?></span> setiap kali Anda subscribe channel di bawah ini.</p>
                     </div>
-                    <span class="text-[10px] bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-bold uppercase tracking-wide">Auto Refresh</span>
+                    <button onclick="location.reload()" class="text-xs bg-slate-50 text-slate-600 hover:bg-blue-50 hover:text-blue-600 px-3 py-2 rounded-lg font-bold transition flex items-center gap-1">
+                        <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh
+                    </button>
                 </div>
 
                 <?php if(count($campaigns) == 0): ?>
@@ -136,21 +134,25 @@ include 'header.php';
                         <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                             <i data-lucide="inbox" class="w-10 h-10 text-slate-300"></i>
                         </div>
-                        <h3 class="text-lg font-bold text-slate-700">Tidak ada misi</h3>
-                        <p class="text-slate-500 text-sm">Semua misi telah selesai. Coba lagi nanti.</p>
+                        <h3 class="text-lg font-bold text-slate-700">Misi Selesai!</h3>
+                        <p class="text-slate-500 text-sm">Semua kampanye tersedia sudah Anda selesaikan. Cek lagi nanti.</p>
                     </div>
                 <?php else: ?>
                     <div class="grid gap-5">
                         <?php foreach($campaigns as $camp): ?>
                         <div class="group bg-white hover:bg-slate-50 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-center transition border border-slate-100 hover:border-blue-200 hover:shadow-lg">
                             <div class="flex items-center gap-5 mb-4 sm:mb-0 w-full">
-                                <img src="<?= $camp['avatar_url'] ?>" class="w-16 h-16 rounded-full border-2 border-white shadow-md group-hover:scale-105 transition">
+                                <div class="relative">
+                                    <img src="<?= $camp['avatar_url'] ?>" class="w-16 h-16 rounded-full border-2 border-white shadow-md group-hover:scale-105 transition">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" class="absolute -bottom-1 -right-1 w-5 h-5">
+                                </div>
                                 <div>
                                     <h4 class="font-bold text-slate-800 text-lg mb-1 group-hover:text-blue-600 transition"><?= htmlspecialchars($camp['channel_name']) ?></h4>
                                     <div class="flex items-center gap-2">
-                                        <p class="text-xs text-green-700 font-bold bg-green-100 px-2 py-1 rounded-lg flex items-center gap-1">
+                                        <p class="text-[10px] text-green-700 font-bold bg-green-100 px-2 py-1 rounded-lg flex items-center gap-1">
                                             <i data-lucide="dollar-sign" class="w-3 h-3"></i> Reward: <?= formatRupiah(REWARD_PER_SUB) ?>
                                         </p>
+                                        <p class="text-[10px] text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">Public Channel</p>
                                     </div>
                                 </div>
                             </div>

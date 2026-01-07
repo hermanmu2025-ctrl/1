@@ -10,7 +10,7 @@ define('DB_PASS', '');
 define('YOUTUBE_API_KEY', 'AIzaSyCNgREc0XJdaFSgWAZMmr51j6BBiBioxT8');
 
 // AI Configuration (Gemini)
-// Replace with your actual Gemini API Key
+// Replace with your actual Gemini API Key (Free Tier Supported)
 define('GEMINI_API_KEY', 'YOUR_GEMINI_API_KEY_HERE'); 
 
 // AI Logic Configuration
@@ -21,7 +21,10 @@ define('AI_TARGET_KEYWORDS', [
     'Jasa Seo',
     'Jasa Membuat website',
     'Subscriber Youtube Gratis',
-    'Cara Menghasilkan Uang di internet'
+    'Cara Menghasilkan Uang di internet',
+    'Algoritma YouTube 2024',
+    'Ide Konten YouTube',
+    'Cara Menambah Jam Tayang'
 ]);
 
 // Admin Security

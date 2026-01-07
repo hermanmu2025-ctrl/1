@@ -1,7 +1,7 @@
 <?php
 require_once 'functions.php';
 
-// Logic Login (User)
+// Logic Login (User) - Preserved from original architecture
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['channel_id'])) {
     $channel_id = trim($_POST['channel_id']);
@@ -21,13 +21,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['channel_id'])) {
                 // --- NEW USER REGISTRATION WITH WELCOME BONUS ---
                 try {
                     $pdo->beginTransaction();
-
-                    // 1. Create User with Bonus Balance
                     $stmt = $pdo->prepare("INSERT INTO users (channel_id, channel_name, avatar_url, balance) VALUES (?, ?, ?, ?)");
                     $stmt->execute([$channel_id, $channel_name, $avatar, WELCOME_BONUS]);
                     $user_id = $pdo->lastInsertId();
 
-                    // 2. Log Welcome Transaction
                     $stmt = $pdo->prepare("INSERT INTO transactions (user_id, type, amount, description, status) VALUES (?, 'deposit', ?, 'Welcome Bonus (New User)', 'completed')");
                     $stmt->execute([$user_id, WELCOME_BONUS]);
 
@@ -37,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['channel_id'])) {
                     $error = "System Error: Gagal registrasi user baru.";
                 }
             } else {
-                // Update Existing User
                 $user_id = $user['id'];
                 $pdo->prepare("UPDATE users SET channel_name=?, avatar_url=? WHERE id=?")->execute([$channel_name, $avatar, $user_id]);
             }
@@ -60,234 +56,291 @@ include 'header.php';
 ?>
 
 <main>
-    <!-- HERO SECTION -->
-    <section class="relative pt-20 pb-32 overflow-hidden bg-white">
-        <div class="absolute top-0 right-0 w-3/4 h-full bg-gradient-to-l from-blue-50/80 to-transparent -z-10 clip-path-polygon"></div>
-        <div class="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-white to-transparent z-10"></div>
+    <!-- HERO SECTION: High Conversion Design -->
+    <section class="relative pt-16 pb-32 overflow-hidden bg-white">
+        <div class="absolute top-0 right-0 w-2/3 h-full bg-gradient-to-l from-blue-50 to-transparent -z-10 clip-path-polygon opacity-70"></div>
+        <div class="absolute -top-24 -left-24 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl"></div>
         
-        <div class="container mx-auto px-6 text-center md:text-left grid md:grid-cols-2 gap-16 items-center relative z-20">
-            <div class="animate-fade-in-up">
-                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold tracking-wide mb-8 animate-pulse">
-                    <span class="w-2 h-2 rounded-full bg-blue-600"></span> SYSTEM V2.0 LIVE UPDATE
+        <div class="container mx-auto px-6 flex flex-col-reverse lg:flex-row items-center gap-16 relative z-10">
+            
+            <!-- Hero Text -->
+            <div class="lg:w-1/2 animate-fade-in-up">
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-bold tracking-wide mb-6 shadow-sm">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                    </span>
+                    PLATFORM YOUTUBE GROWTH #1
                 </div>
-                <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight text-slate-900 tracking-tight">
-                    Dominasi <br> <span class="gradient-text">YouTube</span> Anda.
+                
+                <h1 class="text-5xl md:text-6xl font-extrabold mb-6 leading-tight text-slate-900 tracking-tight">
+                    Solusi <span class="gradient-text">Premium</span> untuk <br>
+                    Youtuber Profesional.
                 </h1>
-                <p class="text-slate-500 text-lg mb-10 leading-relaxed max-w-lg">
-                    Platform <b class="text-slate-800">Urat ID</b> membantu kreator meningkatkan subscriber, reputasi SEO, dan engagement secara organik dengan teknologi keamanan enterprise.
+                <p class="text-slate-500 text-lg mb-8 leading-relaxed">
+                    <strong class="text-slate-800">Urat ID</strong> bukan sekadar tukar subscriber. Kami adalah ekosistem SEO cerdas yang membantu channel Anda meledak di algoritma pencarian dengan aman, cepat, dan berkelas.
                 </p>
                 
-                <div id="login" class="glass-panel p-8 rounded-3xl shadow-2xl relative z-10 max-w-md border border-slate-100">
-                    <div class="flex items-center gap-3 mb-6">
-                        <div class="bg-blue-600 p-2 rounded-lg text-white">
-                            <i data-lucide="log-in" class="w-5 h-5"></i>
+                <div class="flex flex-wrap gap-4">
+                    <a href="#login" class="gradient-primary text-white px-8 py-4 rounded-xl font-bold shadow-lg shadow-blue-600/30 hover:shadow-blue-600/50 hover:-translate-y-1 transition-all duration-300 flex items-center gap-2">
+                        Mulai Sekarang <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </a>
+                    <a href="#about" class="bg-white text-slate-700 border border-slate-200 px-8 py-4 rounded-xl font-bold hover:bg-slate-50 transition flex items-center gap-2">
+                        <i data-lucide="play-circle" class="w-5 h-5"></i> Pelajari Cara Kerja
+                    </a>
+                </div>
+
+                <div class="mt-10 flex items-center gap-6 text-slate-400 grayscale opacity-70">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Logo_of_YouTube_%282015-2017%29.svg" class="h-6">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" class="h-6">
+                    <span class="text-sm font-bold">Partner Terpercaya</span>
+                </div>
+            </div>
+
+            <!-- Login / Interactive Card -->
+            <div class="lg:w-1/2 w-full relative">
+                <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[2.5rem] blur opacity-30 animate-pulse"></div>
+                <div id="login" class="relative glass-panel p-8 md:p-10 rounded-[2rem] shadow-2xl border border-white">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-600/20 text-white">
+                             <i data-lucide="lock" class="w-8 h-8"></i>
                         </div>
-                        <div>
-                             <h3 class="text-lg font-bold text-slate-800">Akses Dashboard</h3>
-                             <p class="text-slate-400 text-xs">Gratis Saldo <?= formatRupiah(WELCOME_BONUS) ?> untuk User Baru</p>
-                        </div>
+                        <h3 class="text-2xl font-bold text-slate-800">Login Secure Dashboard</h3>
+                        <p class="text-slate-500 text-sm mt-2">Masukkan Channel ID untuk akses instan.</p>
                     </div>
                     
-                    <?php if($error): ?><div class="bg-red-50 border border-red-100 text-red-600 p-3 rounded-xl mb-4 text-xs font-bold flex gap-2 items-center"><i data-lucide="alert-circle" class="w-4 h-4"></i><?= $error ?></div><?php endif; ?>
+                    <?php if($error): ?><div class="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl mb-6 text-sm font-bold flex gap-2 items-center animate-bounce"><i data-lucide="alert-circle" class="w-5 h-5"></i><?= $error ?></div><?php endif; ?>
                     
-                    <form method="POST" class="space-y-4">
-                        <div class="relative">
-                            <i data-lucide="youtube" class="absolute left-4 top-4 text-slate-400 w-5 h-5"></i>
-                            <input type="text" name="channel_id" required placeholder="Masukkan Channel ID (UCxxx...)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-4 pl-12 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-700">
+                    <form method="POST" class="space-y-5">
+                        <div class="relative group">
+                            <i data-lucide="youtube" class="absolute left-5 top-5 text-slate-400 w-5 h-5 group-focus-within:text-blue-600 transition"></i>
+                            <input type="text" name="channel_id" required placeholder="Contoh: UCxxx... (Channel ID)" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-5 pl-14 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition font-medium text-slate-800 placeholder:text-slate-400">
                         </div>
-                        <button type="submit" class="w-full gradient-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-600/20 hover:shadow-blue-600/40 hover:-translate-y-1 transition-all duration-300 flex justify-center items-center gap-2">
-                            Masuk Sekarang <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        
+                        <button type="submit" class="w-full gradient-dark text-white font-bold py-5 rounded-xl shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex justify-center items-center gap-2 text-base">
+                            <i data-lucide="log-in" class="w-5 h-5"></i> Masuk Dashboard
                         </button>
                     </form>
-                </div>
-            </div>
-            <div class="hidden md:block relative">
-                <!-- Abstract Decorative Elements -->
-                <div class="absolute top-10 right-10 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-                <div class="absolute top-0 -left-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-                
-                <img src="https://illustrations.popsy.co/amber/digital-nomad.svg" class="w-full drop-shadow-2xl hover:scale-105 transition duration-700 relative z-10">
-            </div>
-        </div>
-    </section>
-
-    <!-- ABOUT SECTION -->
-    <section class="py-20 bg-white">
-        <div class="container mx-auto px-6 text-center max-w-4xl">
-            <h2 class="text-3xl font-bold text-slate-900 mb-6">Tentang <span class="text-blue-600">Urat ID</span></h2>
-            <p class="text-slate-600 text-lg leading-relaxed mb-12">
-                Urat ID adalah ekosistem pertumbuhan digital premium yang dirancang untuk Content Creator modern. 
-                Kami menggabungkan algoritma pertukaran organik dengan keamanan database terenkripsi untuk memastikan setiap pertumbuhan channel Anda aman, valid, dan berdampak positif pada SEO Youtube.
-            </p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                    <h3 class="text-3xl font-extrabold text-blue-600 mb-1">10K+</h3>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Users</p>
-                </div>
-                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                    <h3 class="text-3xl font-extrabold text-blue-600 mb-1">500K+</h3>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Transactions</p>
-                </div>
-                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                    <h3 class="text-3xl font-extrabold text-blue-600 mb-1">24/7</h3>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Monitoring</p>
-                </div>
-                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                    <h3 class="text-3xl font-extrabold text-blue-600 mb-1">100%</h3>
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Secure</p>
+                    
+                    <div class="mt-6 text-center">
+                        <span class="text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                            <i data-lucide="gift" class="w-3 h-3 inline mr-1"></i> Bonus Saldo <?= formatRupiah(WELCOME_BONUS) ?> untuk Pengguna Baru
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- FEATURES & ADVANTAGES -->
-    <section id="features" class="py-24 bg-slate-900 text-white relative overflow-hidden">
-        <!-- Background Glow -->
-        <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-30 pointer-events-none">
-            <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-600 rounded-full blur-[100px]"></div>
-            <div class="absolute bottom-0 right-0 w-96 h-96 bg-purple-600 rounded-full blur-[100px]"></div>
+    <!-- STATS STRIP -->
+    <section class="bg-slate-900 py-10 border-y border-slate-800">
+        <div class="container mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div>
+                <h4 class="text-3xl font-extrabold text-white mb-1">15K+</h4>
+                <p class="text-slate-400 text-xs uppercase tracking-widest font-bold">Pengguna Aktif</p>
+            </div>
+            <div>
+                <h4 class="text-3xl font-extrabold text-blue-500 mb-1">2.5M+</h4>
+                <p class="text-slate-400 text-xs uppercase tracking-widest font-bold">Subscriber Terkirim</p>
+            </div>
+            <div>
+                <h4 class="text-3xl font-extrabold text-white mb-1">100%</h4>
+                <p class="text-slate-400 text-xs uppercase tracking-widest font-bold">Aman & Legal</p>
+            </div>
+            <div>
+                <h4 class="text-3xl font-extrabold text-purple-500 mb-1">24/7</h4>
+                <p class="text-slate-400 text-xs uppercase tracking-widest font-bold">Support System</p>
+            </div>
         </div>
+    </section>
+
+    <!-- TENTANG KAMI (About) -->
+    <section id="about" class="py-24 bg-white">
+        <div class="container mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+            <div class="relative">
+                <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" class="rounded-[2rem] shadow-2xl rotate-3 hover:rotate-0 transition duration-500">
+                <div class="absolute -bottom-10 -left-10 bg-white p-8 rounded-2xl shadow-xl max-w-xs border border-slate-100 hidden md:block">
+                    <p class="text-4xl font-extrabold text-blue-600 mb-2">#1</p>
+                    <p class="font-bold text-slate-800">Platform Optimasi Youtube Terpercaya di Indonesia</p>
+                </div>
+            </div>
+            <div>
+                <span class="text-blue-600 font-bold tracking-widest text-xs uppercase mb-4 block">Tentang Urat ID</span>
+                <h2 class="text-4xl font-bold mb-6 text-slate-900 leading-tight">Membangun Komunitas Kreator yang Saling Mendukung.</h2>
+                <p class="text-slate-500 mb-6 leading-relaxed">
+                    Urat ID hadir sebagai solusi bagi Youtuber pemula maupun profesional yang kesulitan mendapatkan trafik organik. Sistem kami menggunakan algoritma <strong>"Mutual Growth"</strong> yang memastikan setiap interaksi (Subscribe, Like, View) dilakukan oleh manusia asli, bukan bot.
+                </p>
+                <ul class="space-y-4">
+                    <li class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-green-600"><i data-lucide="check" class="w-4 h-4"></i></div>
+                        <span class="font-bold text-slate-700">Verifikasi Akun Otomatis</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-green-600"><i data-lucide="check" class="w-4 h-4"></i></div>
+                        <span class="font-bold text-slate-700">Algoritma Anti-Drop & Proteksi</span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <div class="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center text-green-600"><i data-lucide="check" class="w-4 h-4"></i></div>
+                        <span class="font-bold text-slate-700">Dukungan SEO Booster AI</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- LAYANAN KAMI (Services) -->
+    <section id="services" class="py-24 bg-slate-50 relative overflow-hidden">
+         <!-- Decorative Bg -->
+         <div class="absolute top-0 right-0 w-96 h-96 bg-blue-100 rounded-full blur-[100px] opacity-50"></div>
 
         <div class="container mx-auto px-6 relative z-10">
-            <div class="text-center mb-16">
-                <span class="text-blue-400 font-bold tracking-widest text-xs uppercase mb-2 block">Keunggulan Premium</span>
-                <h2 class="text-4xl font-bold mb-4">Fitur Berkelas Profesional</h2>
-                <p class="text-slate-400 max-w-2xl mx-auto">Kami tidak sekadar platform tukar subscriber. Kami adalah alat bantu growth hacking.</p>
+            <div class="text-center mb-16 max-w-2xl mx-auto">
+                <h2 class="text-4xl font-bold mb-4 text-slate-900">Layanan Premium</h2>
+                <p class="text-slate-500">Kami menyediakan alat lengkap untuk kebutuhan digital marketing channel Anda.</p>
             </div>
 
             <div class="grid md:grid-cols-3 gap-8">
-                <!-- Feature 1 -->
-                <div class="bg-slate-800/50 backdrop-blur border border-slate-700 p-8 rounded-3xl hover:bg-slate-800 transition duration-300">
-                    <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-600/20">
-                        <i data-lucide="shield-check" class="w-7 h-7 text-white"></i>
+                <!-- Service 1 -->
+                <div class="bg-white p-8 rounded-3xl shadow-lg shadow-slate-200/50 hover:-translate-y-2 transition duration-300 border border-slate-100">
+                    <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg shadow-blue-600/30">
+                        <i data-lucide="users" class="w-7 h-7"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Anti-Drop Protection</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Sistem kami memiliki algoritma Cron Job otomatis yang mendeteksi user yang melakukan unsubscribe dan memberikan penalti instan.
+                    <h3 class="text-xl font-bold mb-3">Subscriber Organik</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        Dapatkan subscriber dari pengguna aktif real human. Membantu membuka fitur monetisasi lebih cepat.
                     </p>
                 </div>
-
-                <!-- Feature 2 -->
-                <div class="bg-slate-800/50 backdrop-blur border border-slate-700 p-8 rounded-3xl hover:bg-slate-800 transition duration-300">
-                    <div class="w-14 h-14 bg-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-purple-600/20">
-                        <i data-lucide="zap" class="w-7 h-7 text-white"></i>
+                <!-- Service 2 -->
+                <div class="bg-white p-8 rounded-3xl shadow-lg shadow-slate-200/50 hover:-translate-y-2 transition duration-300 border border-slate-100">
+                    <div class="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg shadow-red-600/30">
+                        <i data-lucide="youtube" class="w-7 h-7"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Instant Verification</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Setiap aksi subscribe diverifikasi secara real-time untuk memastikan saldo reward Anda cair tanpa menunggu lama.
+                    <h3 class="text-xl font-bold mb-3">Jam Tayang (Views)</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        Tingkatkan retensi penonton dengan view berkualitas tinggi yang aman untuk AdSense.
                     </p>
                 </div>
-
-                <!-- Feature 3 -->
-                <div class="bg-slate-800/50 backdrop-blur border border-slate-700 p-8 rounded-3xl hover:bg-slate-800 transition duration-300">
-                    <div class="w-14 h-14 bg-green-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-green-600/20">
-                        <i data-lucide="trending-up" class="w-7 h-7 text-white"></i>
+                <!-- Service 3 -->
+                <div class="bg-white p-8 rounded-3xl shadow-lg shadow-slate-200/50 hover:-translate-y-2 transition duration-300 border border-slate-100">
+                    <div class="w-14 h-14 bg-purple-600 rounded-2xl flex items-center justify-center mb-6 text-white shadow-lg shadow-purple-600/30">
+                        <i data-lucide="bar-chart-2" class="w-7 h-7"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">SEO Booster</h3>
-                    <p class="text-slate-400 text-sm leading-relaxed">
-                        Trafik yang datang berasal dari real human user, memberikan sinyal positif ke algoritma YouTube untuk rekomendasi video.
+                    <h3 class="text-xl font-bold mb-3">SEO Audit</h3>
+                    <p class="text-slate-500 text-sm leading-relaxed">
+                        Analisa kata kunci dan optimasi metadata video agar mudah ditemukan di pencarian Google & YouTube.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- SERVICES & PRICING -->
-    <section id="services" class="py-24 bg-slate-50">
+    <!-- PROMOSI / SALDO GRATIS -->
+    <section class="py-20">
         <div class="container mx-auto px-6">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-                <div class="md:w-1/2">
-                    <h2 class="text-4xl font-bold text-slate-900 mb-4">Layanan & Marketing</h2>
-                    <p class="text-slate-500">Pilih metode pertumbuhan yang sesuai dengan target audience channel Anda.</p>
-                </div>
-                <div class="flex gap-2">
-                     <span class="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 shadow-sm flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-500"></i> Termurah</span>
-                     <span class="px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 shadow-sm flex items-center gap-2"><i data-lucide="check" class="w-4 h-4 text-green-500"></i> Tercepat</span>
+            <div class="bg-gradient-to-r from-indigo-900 to-slate-900 rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden shadow-2xl">
+                <!-- Abstract Shapes -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-yellow-400 rounded-full blur-[100px] opacity-20"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-600 rounded-full blur-[100px] opacity-20"></div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-10">
+                    <div class="md:w-2/3">
+                        <div class="inline-block bg-yellow-400 text-yellow-900 font-extrabold px-4 py-1 rounded-lg text-xs mb-6 uppercase tracking-wider">
+                            Promo Spesial Hari Ini
+                        </div>
+                        <h2 class="text-4xl md:text-5xl font-bold mb-6">Daftar Sekarang, Klaim <br> Saldo Gratis <span class="text-yellow-400"><?= formatRupiah(WELCOME_BONUS) ?></span></h2>
+                        <p class="text-slate-300 text-lg mb-8 max-w-xl">
+                            Tanpa syarat rumit! Cukup masukkan Channel ID Anda, sistem kami akan otomatis memberikan modal awal untuk kampanye pertama Anda.
+                        </p>
+                        <div class="flex gap-4">
+                            <a href="#login" class="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold hover:bg-slate-100 transition shadow-lg flex items-center gap-2">
+                                <i data-lucide="gift" class="w-5 h-5 text-red-500"></i> Ambil Bonus Saya
+                            </a>
+                        </div>
+                    </div>
+                    <div class="md:w-1/3 flex justify-center">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-yellow-400 blur-xl opacity-50 animate-pulse"></div>
+                            <img src="https://cdn3d.iconscout.com/3d/premium/thumb/gift-box-4475458-3715874.png" class="w-64 relative z-10 animate-float">
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Service Card 1 -->
-                <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 hover:-translate-y-2 transition duration-300">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="bg-blue-100 p-3 rounded-xl">
-                            <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
-                        </div>
-                        <span class="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded uppercase">Best Seller</span>
+    <!-- KEUNGGULAN (Advantages) -->
+    <section id="features" class="py-24 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4 text-slate-900">Mengapa Urat ID Istimewa?</h2>
+                <p class="text-slate-500">Fitur berkelas yang tidak akan Anda temukan di platform lain.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Feat 1 -->
+                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition group">
+                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Organic Subscriber</h3>
-                    <p class="text-slate-500 text-sm mb-6">Dapatkan subscriber dari user aktif lain dengan sistem mutualisme yang adil.</p>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-2 text-sm text-slate-600"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> Real Human Users</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-600"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> Permanen (Garansi)</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-600"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> Harga: Rp <?= PRICE_PER_SUB ?> / Sub</li>
-                    </ul>
-                    <a href="#login" class="block w-full text-center py-3 rounded-xl border-2 border-blue-600 text-blue-600 font-bold hover:bg-blue-600 hover:text-white transition">Pesan Sekarang</a>
+                    <h4 class="font-bold text-lg mb-2">100% Aman</h4>
+                    <p class="text-sm text-slate-500">Tanpa password akun. Kami hanya butuh Channel ID publik.</p>
                 </div>
-
-                <!-- Service Card 2 -->
-                <div class="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-3xl shadow-xl hover:-translate-y-2 transition duration-300 text-white relative overflow-hidden">
-                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-blue-600 rounded-full blur-[60px] opacity-50"></div>
-                    
-                    <div class="flex justify-between items-start mb-6 relative z-10">
-                        <div class="bg-white/10 p-3 rounded-xl backdrop-blur">
-                            <i data-lucide="bar-chart-2" class="w-6 h-6 text-white"></i>
-                        </div>
-                        <span class="bg-yellow-500 text-slate-900 text-[10px] font-bold px-2 py-1 rounded uppercase">Premium</span>
+                 <!-- Feat 2 -->
+                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition group">
+                    <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-purple-600 group-hover:text-white transition">
+                        <i data-lucide="zap" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-2 relative z-10">VIP SEO Content</h3>
-                    <p class="text-slate-400 text-sm mb-6 relative z-10">Artikel dan backlink berkualitas untuk mendongkrak ranking video di pencarian.</p>
-                    <ul class="space-y-3 mb-8 relative z-10">
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check-circle" class="w-4 h-4 text-yellow-500"></i> High Retention</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check-circle" class="w-4 h-4 text-yellow-500"></i> Keyword Targeted</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-300"><i data-lucide="check-circle" class="w-4 h-4 text-yellow-500"></i> Konsultasi Gratis</li>
-                    </ul>
-                    <a href="blog.php" class="block w-full text-center py-3 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition relative z-10">Pelajari Lebih Lanjut</a>
+                    <h4 class="font-bold text-lg mb-2">Proses Instan</h4>
+                    <p class="text-sm text-slate-500">Saldo masuk detik itu juga setelah sistem memverifikasi aksi Anda.</p>
                 </div>
-
-                 <!-- Service Card 3 -->
-                 <div class="bg-white p-8 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 hover:-translate-y-2 transition duration-300">
-                    <div class="flex justify-between items-start mb-6">
-                        <div class="bg-purple-100 p-3 rounded-xl">
-                            <i data-lucide="gem" class="w-6 h-6 text-purple-600"></i>
-                        </div>
+                 <!-- Feat 3 -->
+                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition group">
+                    <div class="w-12 h-12 bg-green-100 text-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-green-600 group-hover:text-white transition">
+                        <i data-lucide="dollar-sign" class="w-6 h-6"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">Channel Audit</h3>
-                    <p class="text-slate-500 text-sm mb-6">Analisa mendalam kesehatan channel Anda menggunakan AI Intelligence.</p>
-                    <ul class="space-y-3 mb-8">
-                        <li class="flex items-center gap-2 text-sm text-slate-600"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> Metadata Check</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-600"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> Competitor Analysis</li>
-                        <li class="flex items-center gap-2 text-sm text-slate-600"><i data-lucide="check-circle" class="w-4 h-4 text-green-500"></i> Growth Strategy</li>
-                    </ul>
-                    <a href="#login" class="block w-full text-center py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:border-purple-600 hover:text-purple-600 transition">Coba Gratis</a>
+                    <h4 class="font-bold text-lg mb-2">Reward Tinggi</h4>
+                    <p class="text-sm text-slate-500">Dapatkan bayaran per subscribe tertinggi di kelasnya.</p>
+                </div>
+                 <!-- Feat 4 -->
+                <div class="p-6 rounded-2xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition group">
+                    <div class="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mb-4 group-hover:bg-red-600 group-hover:text-white transition">
+                        <i data-lucide="alert-octagon" class="w-6 h-6"></i>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">Sanksi Tegas</h4>
+                    <p class="text-sm text-slate-500">User yang unsubscribe akan didenda otomatis oleh sistem.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- BLOG SECTION -->
-    <section class="py-24 bg-white">
+    <section class="py-24 bg-slate-50">
         <div class="container mx-auto px-6">
-            <div class="flex justify-between items-end mb-12">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-4">
                 <div>
-                    <h2 class="text-3xl font-bold mb-2">Artikel & Wawasan</h2>
-                    <p class="text-slate-500">Tips terbaru seputar YouTube Growth & Algoritma.</p>
+                    <span class="text-blue-600 font-bold tracking-widest text-xs uppercase mb-2 block">Wawasan Digital</span>
+                    <h2 class="text-3xl font-bold text-slate-900">Blog & SEO Tips</h2>
                 </div>
-                <a href="blog.php" class="text-blue-600 font-bold flex items-center gap-1 hover:gap-2 transition-all">Lihat Blog <i data-lucide="arrow-right" class="w-4 h-4"></i></a>
+                <a href="blog.php" class="px-6 py-3 bg-white border border-slate-200 rounded-full font-bold text-sm hover:bg-blue-600 hover:text-white transition flex items-center gap-2">
+                    Baca Semua Artikel <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
             </div>
+            
             <div class="grid md:grid-cols-3 gap-8">
                 <?php foreach($latest_posts as $post): ?>
-                <article class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition group border border-slate-100">
+                <article class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition group border border-slate-200">
                     <div class="h-48 overflow-hidden bg-slate-200 relative">
-                        <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition z-10"></div>
+                        <div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition z-10"></div>
                         <img src="<?= htmlspecialchars($post['thumbnail']) ?>" class="w-full h-full object-cover group-hover:scale-110 transition duration-700">
                     </div>
                     <div class="p-6">
-                        <div class="text-xs font-bold text-blue-600 mb-2 uppercase tracking-wide">Tips & Trick</div>
+                        <div class="text-[10px] font-bold text-blue-600 mb-2 uppercase tracking-wide bg-blue-50 w-fit px-2 py-1 rounded">Strategy</div>
                         <h3 class="text-lg font-bold mb-3 group-hover:text-blue-600 line-clamp-2 leading-snug">
                             <a href="post.php?slug=<?= $post['slug'] ?>"><?= htmlspecialchars($post['title']) ?></a>
                         </h3>
-                        <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed"><?= strip_tags(substr($post['content'], 0, 150)) ?>...</p>
+                        <p class="text-slate-500 text-sm line-clamp-3 leading-relaxed">
+                            <?= isset($post['meta_desc']) && $post['meta_desc'] ? $post['meta_desc'] : strip_tags(substr($post['content'], 0, 100)).'...' ?>
+                        </p>
                     </div>
                 </article>
                 <?php endforeach; ?>
@@ -297,66 +350,64 @@ include 'header.php';
 </main>
 
 <!-- PREMIUM FOOTER -->
-<footer class="bg-slate-950 text-slate-300 pt-20 pb-10 border-t border-slate-900">
+<footer class="bg-slate-950 text-slate-300 pt-24 pb-10 border-t border-slate-900 font-sans">
     <div class="container mx-auto px-6">
-        <div class="grid md:grid-cols-4 gap-12 mb-16">
+        <div class="grid md:grid-cols-4 gap-12 mb-20">
             <!-- Brand -->
             <div class="col-span-1 md:col-span-1">
                 <a href="index.php" class="flex items-center gap-2 mb-6">
-                    <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-                        <i data-lucide="activity" class="text-white w-5 h-5"></i>
+                    <div class="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
+                        <i data-lucide="zap" class="text-white w-6 h-6"></i>
                     </div>
-                    <span class="text-2xl font-bold text-white">Urat<span class="text-blue-600">ID</span></span>
+                    <span class="text-2xl font-extrabold text-white tracking-tight">Urat<span class="text-blue-600">ID</span></span>
                 </a>
                 <p class="text-slate-500 text-sm leading-relaxed mb-6">
-                    Platform growth hacking YouTube #1 di Indonesia dengan teknologi keamanan mutakhir dan komunitas kreator terbesar.
+                    Platform growth hacking YouTube #1 di Indonesia dengan teknologi keamanan mutakhir, fitur SEO AI, dan komunitas kreator terbesar.
                 </p>
                 <div class="flex gap-4">
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-blue-600 hover:text-white transition"><i data-lucide="instagram" class="w-4 h-4"></i></a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-blue-600 hover:text-white transition"><i data-lucide="twitter" class="w-4 h-4"></i></a>
-                    <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-blue-600 hover:text-white transition"><i data-lucide="youtube" class="w-4 h-4"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-blue-600 transition text-white"><i data-lucide="instagram" class="w-4 h-4"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-red-600 transition text-white"><i data-lucide="youtube" class="w-4 h-4"></i></a>
+                    <a href="#" class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center hover:bg-sky-500 transition text-white"><i data-lucide="twitter" class="w-4 h-4"></i></a>
                 </div>
             </div>
-
+            
             <!-- Links -->
             <div>
-                <h4 class="text-white font-bold mb-6">Perusahaan</h4>
-                <ul class="space-y-4 text-sm">
-                    <li><a href="#" class="hover:text-blue-500 transition">Tentang Kami</a></li>
-                    <li><a href="#" class="hover:text-blue-500 transition">Karir</a></li>
-                    <li><a href="#" class="hover:text-blue-500 transition">Hubungi Kami</a></li>
-                    <li><a href="blog.php" class="hover:text-blue-500 transition">Blog Media</a></li>
+                <h4 class="text-white font-bold mb-6">Menu Utama</h4>
+                <ul class="space-y-3 text-sm">
+                    <li><a href="#about" class="hover:text-blue-500 transition">Tentang Kami</a></li>
+                    <li><a href="#services" class="hover:text-blue-500 transition">Layanan</a></li>
+                    <li><a href="#features" class="hover:text-blue-500 transition">Keunggulan</a></li>
+                    <li><a href="blog.php" class="hover:text-blue-500 transition">Blog & Artikel</a></li>
                 </ul>
             </div>
-
-            <!-- Legal -->
+            
             <div>
-                <h4 class="text-white font-bold mb-6">Legal & Bantuan</h4>
-                <ul class="space-y-4 text-sm">
+                <h4 class="text-white font-bold mb-6">Bantuan</h4>
+                <ul class="space-y-3 text-sm">
                     <li><a href="#" class="hover:text-blue-500 transition">Syarat & Ketentuan</a></li>
                     <li><a href="#" class="hover:text-blue-500 transition">Kebijakan Privasi</a></li>
-                    <li><a href="#" class="hover:text-blue-500 transition">Disclaimer</a></li>
-                    <li><a href="#" class="hover:text-blue-500 transition">Pusat Bantuan</a></li>
+                    <li><a href="#" class="hover:text-blue-500 transition">Hubungi Kami</a></li>
+                    <li><a href="admin_login.php" class="hover:text-blue-500 transition">Login Admin</a></li>
                 </ul>
             </div>
 
-            <!-- Payment -->
+            <!-- Newsletter -->
             <div>
-                <h4 class="text-white font-bold mb-6">Metode Pembayaran</h4>
-                <p class="text-xs text-slate-500 mb-4">Transaksi aman dengan enkripsi SSL 256-bit.</p>
-                <div class="grid grid-cols-3 gap-3">
-                     <div class="bg-white rounded h-8 flex items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/1200px-BANK_BRI_logo.svg.png" class="h-4"></div>
-                     <div class="bg-white rounded h-8 flex items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/2560px-Bank_Central_Asia.svg.png" class="h-3"></div>
-                     <div class="bg-white rounded h-8 flex items-center justify-center text-xs font-bold text-slate-800">QRIS</div>
-                     <div class="bg-white rounded h-8 flex items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Logo_ovo_purple.svg/2560px-Logo_ovo_purple.svg.png" class="h-3"></div>
-                     <div class="bg-white rounded h-8 flex items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_dana_blue.svg/2560px-Logo_dana_blue.svg.png" class="h-3"></div>
-                     <div class="bg-white rounded h-8 flex items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" class="h-3"></div>
-                </div>
+                <h4 class="text-white font-bold mb-6">Berlangganan Tips</h4>
+                <p class="text-slate-500 text-xs mb-4">Dapatkan trik SEO Youtube terbaru.</p>
+                <form class="flex">
+                    <input type="email" placeholder="Email Anda" class="bg-slate-900 border border-slate-800 rounded-l-lg px-4 py-2 text-sm w-full outline-none focus:border-blue-600">
+                    <button class="bg-blue-600 px-4 rounded-r-lg hover:bg-blue-700 transition"><i data-lucide="send" class="w-4 h-4 text-white"></i></button>
+                </form>
             </div>
         </div>
 
-        <div class="pt-8 border-t border-slate-900 text-center text-sm text-slate-600">
+        <div class="pt-8 border-t border-slate-900 text-center text-sm text-slate-600 flex flex-col md:flex-row justify-between items-center">
             <p>&copy; <?= date('Y') ?> PT Urat Digital Indonesia. All rights reserved.</p>
+            <p class="flex items-center gap-2 mt-4 md:mt-0">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> System Operational
+            </p>
         </div>
     </div>
 </footer>

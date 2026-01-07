@@ -32,8 +32,8 @@ $selected_topic = $allowed_topics[$random_index];
 
 echo "[AUTO POST] Topic Selected: " . $selected_topic . "\n";
 
-// 3. Request ke AI
-echo "[AUTO POST] Requesting content from Gemini AI...\n";
+// 3. Request ke AI (Uses Smart Model Selection)
+echo "[AUTO POST] Requesting content from Sovereign AI...\n";
 $aiResult = generateAIArticle($selected_topic);
 
 // 4. Error Handling Log
@@ -74,7 +74,7 @@ $thumb_url = "https://source.unsplash.com/1200x800/?" . $image_keywords . "&sig=
 
 // Character Count Log
 $char_count = strlen(strip_tags($content));
-echo "[AUTO POST] Generated $char_count chars.\n";
+echo "[AUTO POST] Generated $char_count chars using model: " . ($aiResult['used_model'] ?? 'Unknown') . "\n";
 
 // 6. Save to DB
 try {
