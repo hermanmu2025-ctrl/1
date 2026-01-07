@@ -62,7 +62,7 @@ if (isset($_POST['generate_ai'])) {
         $meta_desc = $aiResult['meta_desc'] ?? '';
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
         
-        // Simulate AI Image Generation using Keyword-based Placeholder
+        // Simulate AI Image Generation using Keyword-based Placeholder (Unsplash Source)
         $image_keywords = urlencode($aiResult['image_keywords'] ?? 'technology');
         $thumb_url = "https://source.unsplash.com/800x600/?" . $image_keywords;
         
@@ -99,101 +99,113 @@ include 'header.php';
 ?>
 
 <div class="container mx-auto p-6 max-w-7xl">
-    <div class="flex justify-between items-center mb-8">
+    <div class="flex justify-between items-center mb-10">
         <h1 class="text-3xl font-bold text-slate-800">Admin Dashboard</h1>
-        <div class="bg-red-100 text-red-600 px-4 py-2 rounded-lg font-mono font-bold">Pass: Amnet123</div>
+        <div class="bg-red-50 border border-red-100 text-red-600 px-5 py-2 rounded-lg font-mono font-bold text-sm">
+            <i data-lucide="shield" class="w-4 h-4 inline mr-2"></i> Security Active
+        </div>
     </div>
 
     <?php if($success_msg): ?>
-        <div class="bg-green-100 text-green-700 p-4 rounded-xl mb-6 font-bold"><?= $success_msg ?></div>
+        <div class="bg-green-100 text-green-700 p-4 rounded-xl mb-6 font-bold flex items-center gap-2"><i data-lucide="check-circle"></i> <?= $success_msg ?></div>
     <?php endif; ?>
     <?php if($error_msg): ?>
-        <div class="bg-red-100 text-red-700 p-4 rounded-xl mb-6 font-bold"><?= $error_msg ?></div>
+        <div class="bg-red-100 text-red-700 p-4 rounded-xl mb-6 font-bold flex items-center gap-2"><i data-lucide="alert-triangle"></i> <?= $error_msg ?></div>
     <?php endif; ?>
 
     <!-- TABS -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         <!-- AI GENERATOR -->
-        <div class="glass-panel p-6 rounded-2xl border border-purple-200 bg-gradient-to-br from-white to-purple-50">
+        <div class="glass-panel p-8 rounded-3xl border border-purple-200 bg-gradient-to-br from-white to-purple-50/50">
             <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-purple-700">
                 <i data-lucide="bot" class="w-6 h-6"></i> AI Blog Generator (Gemini)
             </h2>
-            <p class="text-sm text-slate-500 mb-4">Otomatis membuat artikel 3000-5000 karakter, judul marketing, dan gambar.</p>
+            <p class="text-sm text-slate-500 mb-6">Otomatis membuat artikel SEO 3000+ karakter, judul marketing, dan gambar.</p>
             <form method="POST" class="space-y-4">
-                <input type="text" name="topic" required placeholder="Contoh: Cara Menambah 1000 Subscriber Youtube Cepat" class="w-full p-4 rounded-xl border border-purple-200 focus:ring-2 focus:ring-purple-500 outline-none">
-                <button type="submit" name="generate_ai" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition flex justify-center items-center gap-2">
+                <input type="text" name="topic" required placeholder="Contoh: Cara Menambah 1000 Subscriber Youtube Cepat" class="w-full p-4 rounded-xl border border-purple-200 focus:ring-2 focus:ring-purple-500 outline-none shadow-sm">
+                <button type="submit" name="generate_ai" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl transition flex justify-center items-center gap-2 shadow-lg shadow-purple-600/20">
                     <i data-lucide="sparkles" class="w-4 h-4"></i> Generate Article Now
                 </button>
             </form>
         </div>
 
         <!-- MANUAL POST -->
-        <div class="glass-panel p-6 rounded-2xl">
-            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+        <div class="glass-panel p-8 rounded-3xl border border-slate-200">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2 text-slate-800">
                 <i data-lucide="pen-tool" class="w-5 h-5"></i> Manual Post
             </h2>
             <form method="POST" enctype="multipart/form-data" class="space-y-3">
-                <input type="text" name="title" required placeholder="Judul" class="w-full p-3 rounded-lg border border-slate-200">
-                <textarea name="content" rows="3" required placeholder="Isi Content HTML..." class="w-full p-3 rounded-lg border border-slate-200"></textarea>
-                <input type="file" name="thumbnail" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                <button type="submit" name="post_article" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">Publish Manual</button>
+                <input type="text" name="title" required placeholder="Judul Artikel" class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
+                <textarea name="content" rows="3" required placeholder="Isi Content (Support HTML)..." class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                <input type="file" name="thumbnail" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition">
+                <button type="submit" name="post_article" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-bold transition w-full">Publish Manual</button>
             </form>
         </div>
 
     </div>
 
     <!-- DEPOSIT APPROVAL -->
-    <div class="mt-8 glass-panel p-6 rounded-2xl border-l-4 border-yellow-400">
-        <h2 class="text-xl font-bold mb-4">Deposit Pending</h2>
-        <table class="w-full text-sm">
-            <thead><tr><th class="text-left">User</th><th class="text-left">Jumlah</th><th class="text-left">Bukti</th><th class="text-left">Aksi</th></tr></thead>
-            <tbody>
-                <?php foreach($pending_deposits as $d): ?>
-                <tr class="border-b">
-                    <td class="py-3"><?= htmlspecialchars($d['channel_name']) ?></td>
-                    <td class="font-mono text-green-600"><?= formatRupiah($d['amount']) ?></td>
-                    <td><a href="<?= $d['proof_img'] ?>" target="_blank" class="text-blue-500 underline">Lihat</a></td>
-                    <td><a href="admin.php?approve_deposit=<?= $d['id'] ?>" class="bg-green-500 text-white px-3 py-1 rounded">Approve</a></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+    <div class="mt-10 glass-panel p-8 rounded-3xl border-l-8 border-yellow-400">
+        <h2 class="text-xl font-bold mb-6 flex items-center gap-2">Deposit Pending <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full"><?= count($pending_deposits) ?> Request</span></h2>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs text-slate-400 uppercase bg-slate-50 rounded-lg">
+                    <tr>
+                        <th class="px-4 py-3 rounded-l-lg">User</th>
+                        <th class="px-4 py-3">Jumlah</th>
+                        <th class="px-4 py-3">Bukti</th>
+                        <th class="px-4 py-3 rounded-r-lg">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach($pending_deposits as $d): ?>
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                        <td class="px-4 py-4 font-bold text-slate-700"><?= htmlspecialchars($d['channel_name']) ?></td>
+                        <td class="px-4 py-4 font-mono text-green-600 font-bold"><?= formatRupiah($d['amount']) ?></td>
+                        <td class="px-4 py-4"><a href="<?= $d['proof_img'] ?>" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i data-lucide="image" class="w-3 h-3"></i> Lihat</a></td>
+                        <td class="px-4 py-4"><a href="admin.php?approve_deposit=<?= $d['id'] ?>" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition">Approve</a></td>
+                    </tr>
+                    <?php endforeach; ?>
+                    <?php if(empty($pending_deposits)) echo "<tr><td colspan='4' class='text-center py-4 text-slate-400'>Tidak ada deposit pending.</td></tr>"; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- MANAGE POSTS -->
-    <div class="mt-8 glass-panel p-6 rounded-2xl">
-        <h2 class="text-xl font-bold mb-4">Manage Blog Posts</h2>
+    <div class="mt-10 glass-panel p-8 rounded-3xl border border-slate-200">
+        <h2 class="text-xl font-bold mb-6">Manage Blog Posts</h2>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
-                <thead><tr><th class="text-left">Title</th><th class="text-right">Action</th></tr></thead>
+                <thead><tr><th class="text-left pb-4 text-slate-400">Title</th><th class="text-right pb-4 text-slate-400">Action</th></tr></thead>
                 <tbody>
                     <?php foreach($posts as $post): ?>
-                    <tr class="border-b hover:bg-slate-50">
-                        <td class="py-3 font-medium"><?= htmlspecialchars($post['title']) ?></td>
-                        <td class="text-right flex justify-end gap-2 py-3">
-                            <!-- Edit Button (Trigger Modal - simplified for PHP) -->
-                            <button onclick="document.getElementById('edit-<?= $post['id'] ?>').style.display='flex'" class="bg-yellow-500 text-white px-3 py-1 rounded text-xs">Edit</button>
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
+                        <td class="py-4 font-medium text-slate-700"><?= htmlspecialchars($post['title']) ?></td>
+                        <td class="text-right flex justify-end gap-2 py-4">
+                            <!-- Edit Button -->
+                            <button onclick="document.getElementById('edit-<?= $post['id'] ?>').style.display='flex'" class="bg-yellow-50 text-yellow-600 px-3 py-1.5 rounded-lg text-xs font-bold border border-yellow-200 hover:bg-yellow-100">Edit</button>
                             
                             <!-- Delete Form -->
                             <form method="POST" onsubmit="return confirm('Hapus postingan ini?');">
                                 <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
-                                <button type="submit" name="delete_post" class="bg-red-500 text-white px-3 py-1 rounded text-xs">Hapus</button>
+                                <button type="submit" name="delete_post" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold border border-red-200 hover:bg-red-100">Hapus</button>
                             </form>
                         </td>
                     </tr>
 
                     <!-- Simple Edit Modal -->
-                    <div id="edit-<?= $post['id'] ?>" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50">
-                        <div class="bg-white p-6 rounded-xl w-full max-w-2xl">
-                            <h3 class="font-bold text-lg mb-4">Edit Post</h3>
+                    <div id="edit-<?= $post['id'] ?>" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
+                        <div class="bg-white p-8 rounded-2xl w-full max-w-2xl shadow-2xl">
+                            <h3 class="font-bold text-lg mb-6">Edit Post</h3>
                             <form method="POST">
                                 <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
-                                <input type="text" name="title" value="<?= htmlspecialchars($post['title']) ?>" class="w-full border p-2 mb-2 rounded">
-                                <textarea name="content" rows="10" class="w-full border p-2 mb-4 rounded"><?= htmlspecialchars($post['content']) ?></textarea>
-                                <div class="flex justify-end gap-2">
-                                    <button type="button" onclick="document.getElementById('edit-<?= $post['id'] ?>').style.display='none'" class="bg-slate-200 px-4 py-2 rounded">Batal</button>
-                                    <button type="submit" name="update_post" class="bg-blue-600 text-white px-4 py-2 rounded">Simpan</button>
+                                <input type="text" name="title" value="<?= htmlspecialchars($post['title']) ?>" class="w-full border border-slate-200 p-3 mb-4 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
+                                <textarea name="content" rows="10" class="w-full border border-slate-200 p-3 mb-6 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm"><?= htmlspecialchars($post['content']) ?></textarea>
+                                <div class="flex justify-end gap-3">
+                                    <button type="button" onclick="document.getElementById('edit-<?= $post['id'] ?>').style.display='none'" class="bg-slate-100 text-slate-600 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-200 transition">Batal</button>
+                                    <button type="submit" name="update_post" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition">Simpan</button>
                                 </div>
                             </form>
                         </div>

@@ -31,6 +31,8 @@ function getUser($userId) {
 }
 
 function checkYoutubeSubscription($subscriberChannelId, $targetChannelId) {
+    // In production, implement real YouTube API check here
+    // Requires OAuth2 usually. For now, assume true to allow logic flow.
     return true;
 }
 
