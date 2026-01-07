@@ -41,7 +41,7 @@ function checkYoutubeSubscription($subscriberChannelId, $targetChannelId) {
     return true;
 }
 
-// --- SOVEREIGN AI INTELLIGENCE SUITE (v3.1 Enhanced Stability) ---
+// --- SOVEREIGN AI INTELLIGENCE SUITE (v3.2 Enhanced) ---
 
 /**
  * Extract JSON object from text that might contain markdown or other noise
@@ -67,7 +67,6 @@ function extractJsonFromText($text) {
 
 /**
  * Automatically fetches available Gemini models from Google API.
- * Prioritizes Flash models for speed and cost-efficiency.
  */
 function getAvailableGeminiModels() {
     if (!defined('GEMINI_API_KEY') || empty(GEMINI_API_KEY) || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
@@ -90,7 +89,6 @@ function getAvailableGeminiModels() {
         $data = json_decode($response, true);
         if (isset($data['models']) && is_array($data['models'])) {
             foreach ($data['models'] as $model) {
-                // Filter for content generation models only
                 if (isset($model['supportedGenerationMethods']) && in_array('generateContent', $model['supportedGenerationMethods'])) {
                     $modelName = str_replace('models/', '', $model['name']);
                     $models[] = $modelName;
@@ -99,14 +97,12 @@ function getAvailableGeminiModels() {
         }
     }
 
-    // Smart Sort: Prefer 'flash' models, then 'pro', then others.
     usort($models, function($a, $b) {
         $scoreA = (strpos($a, 'flash') !== false ? 2 : 0) + (strpos($a, '1.5') !== false ? 1 : 0);
         $scoreB = (strpos($b, 'flash') !== false ? 2 : 0) + (strpos($b, '1.5') !== false ? 1 : 0);
-        return $scoreB - $scoreA; // Descending
+        return $scoreB - $scoreA;
     });
 
-    // Fallback if API fails or returns nothing
     if (empty($models)) {
         return ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0-pro'];
     }
@@ -115,23 +111,21 @@ function getAvailableGeminiModels() {
 }
 
 function generateAIArticle($broad_topic) {
-    // 1. Validate API Key
     if (!defined('GEMINI_API_KEY') || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE' || empty(GEMINI_API_KEY)) {
         return ['error' => 'API Key Gemini belum dikonfigurasi di config.php'];
     }
 
-    // 2. Get Auto-Discovered Models
     $models = getAvailableGeminiModels();
     
-    // 3. Prompt Engineering
-    $promptText = "Bertindaklah sebagai Pakar SEO dan Content Creator YouTube Senior. \n";
-    $promptText .= "Tugas: Buat satu artikel blog lengkap berdasarkan topik: '" . $broad_topic . "'. \n";
-    $promptText .= "Kriteria WAJIB: \n";
-    $promptText .= "1. Judul: Clickbait, emosional, dan unik (Maksimal 100 karakter). \n";
-    $promptText .= "2. Konten: Panjang minimum 2500 karakter. Gunakan format HTML (h2, h3, p, ul, li, strong, blockquote). Gaya bahasa storytelling yang mengalir. \n";
-    $promptText .= "3. Meta Description: 150 karakter untuk SEO. \n";
-    $promptText .= "4. Image Keywords: 3 kata kunci bahasa inggris untuk pencarian gambar (comma separated). \n";
-    $promptText .= "Output WAJIB Format JSON VALID RFC8259 tanpa markdown code block. Struktur: { \"title\": \"...\", \"content\": \"...\", \"meta_desc\": \"...\", \"image_keywords\": \"...\" }";
+    // Strict JSON Prompt
+    $promptText = "Role: SEO Expert & Professional Youtuber.\n";
+    $promptText .= "Task: Write a blog post about: '" . $broad_topic . "'.\n";
+    $promptText .= "Requirements:\n";
+    $promptText .= "1. Title: Clickbait & Emotional (Max 100 chars).\n";
+    $promptText .= "2. Content: Min 2500 chars. Use HTML (h2, h3, p, ul, strong). Storytelling style.\n";
+    $promptText .= "3. Meta Desc: 150 chars summary.\n";
+    $promptText .= "4. Image Keywords: 3 English keywords for finding images (comma separated).\n";
+    $promptText .= "IMPORTANT: Output ONLY valid JSON RFC8259. No markdown blocks. Structure: { \"title\": \"...\", \"content\": \"...\", \"meta_desc\": \"...\", \"image_keywords\": \"...\" }";
 
     $data = [
         "contents" => [
@@ -145,21 +139,12 @@ function generateAIArticle($broad_topic) {
         "generationConfig" => [
             "temperature" => 0.7,
             "maxOutputTokens" => 8000,
-        ],
-        "safetySettings" => [
-            [ "category" => "HARM_CATEGORY_HARASSMENT", "threshold" => "BLOCK_NONE" ],
-            [ "category" => "HARM_CATEGORY_HATE_SPEECH", "threshold" => "BLOCK_NONE" ],
-            [ "category" => "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold" => "BLOCK_NONE" ],
-            [ "category" => "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold" => "BLOCK_NONE" ]
+            "responseMimeType" => "application/json" // Explicitly request JSON
         ]
     ];
 
     $lastError = '';
-    
-    // Ensure we have a valid array of models
-    if (!is_array($models) || empty($models)) {
-        $models = ['gemini-1.5-flash'];
-    }
+    if (!is_array($models) || empty($models)) $models = ['gemini-1.5-flash'];
 
     foreach ($models as $model) {
         $apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/" . $model . ":generateContent?key=" . GEMINI_API_KEY;
@@ -170,53 +155,38 @@ function generateAIArticle($broad_topic) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60); // Increased timeout
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlErr = curl_error($ch);
         curl_close($ch);
 
-        if ($curlErr) {
-            $lastError = "Curl Error ($model): $curlErr";
-            continue; // Try next model
-        }
-
-        $result = json_decode($response, true);
-
-        // Handle API Errors
         if ($httpCode !== 200) {
+            $result = json_decode($response, true);
             $apiMsg = isset($result['error']['message']) ? $result['error']['message'] : 'Unknown API Error';
             $lastError = "API Error $httpCode ($model): $apiMsg";
-            
-            if ($httpCode == 429) {
-                continue; // Rate limit hit
-            }
             continue;
         }
 
-        // Success Parsing
+        $result = json_decode($response, true);
         if (isset($result['candidates'][0]['content']['parts'][0]['text'])) {
             $rawText = $result['candidates'][0]['content']['parts'][0]['text'];
-            
-            // Improved JSON Cleaning
             $cleanJson = extractJsonFromText($rawText);
             $jsonResult = json_decode($cleanJson, true);
             
             if (json_last_error() === JSON_ERROR_NONE && !empty($jsonResult['content'])) {
-                // Content Injection for length assurance and internal linking
-                if (strlen($jsonResult['content']) < 1000) {
-                     $jsonResult['content'] .= "<hr><h3>Kesimpulan Strategis</h3><p>Konsistensi adalah kunci keberhasilan di YouTube. Jangan menyerah jika belum melihat hasil instan. Gunakan strategi yang telah dibahas di atas dan manfaatkan fitur <strong>Urat ID</strong> untuk mempercepat pertumbuhan channel Anda.</p>";
+                 // Fallback if meta_desc missing from AI (prevents SQL error logic wise, though DB should be fixed)
+                if (!isset($jsonResult['meta_desc'])) {
+                    $jsonResult['meta_desc'] = substr(strip_tags($jsonResult['content']), 0, 150) . '...';
                 }
-                $jsonResult['used_model'] = $model; // Track which model worked
-                return $jsonResult; // Success return
+                $jsonResult['used_model'] = $model;
+                return $jsonResult;
             } else {
                 $lastError = "JSON Parse Error ($model): " . json_last_error_msg();
             }
         }
     }
 
-    // If loop finishes without return
-    return ['error' => "Sovereign AI Failed on all available models. Last Error: $lastError"];
+    return ['error' => "Sovereign AI Failed. Last Error: $lastError"];
 }
 ?>

@@ -257,10 +257,40 @@ include 'header.php';
                             </a>
                         </div>
                     </div>
-                    <div class="md:w-1/3 flex justify-center">
-                        <div class="relative">
-                            <div class="absolute inset-0 bg-yellow-400 blur-xl opacity-50 animate-pulse"></div>
-                            <img src="https://cdn3d.iconscout.com/3d/premium/thumb/gift-box-4475458-3715874.png" class="w-64 relative z-10 animate-float">
+                    <div class="md:w-1/3 flex justify-center relative perspective-1000">
+                        <!-- Premium Back Glow -->
+                        <div class="absolute inset-0 bg-gradient-to-tr from-yellow-400/40 to-purple-500/40 rounded-full blur-[80px] animate-pulse"></div>
+                        
+                        <!-- Main 3D Composition -->
+                        <div class="relative z-10 group cursor-pointer">
+                            <div class="animate-float relative">
+                                <img src="https://cdn3d.iconscout.com/3d/premium/thumb/gift-box-and-gold-coin-5379685-4496468.png" 
+                                     class="w-72 md:w-80 drop-shadow-2xl transition-transform duration-500 transform group-hover:scale-110 group-hover:rotate-6" 
+                                     alt="Premium Bonus Gift">
+                                
+                                <!-- Floating Badge 1 -->
+                                <div class="absolute -top-4 -right-4 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl shadow-yellow-500/20 animate-bounce delay-700 border border-white/50">
+                                    <div class="flex items-center gap-2">
+                                        <div class="bg-green-100 p-1.5 rounded-lg text-green-600">
+                                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] text-slate-400 font-bold uppercase">Status</p>
+                                            <p class="text-xs font-extrabold text-slate-800">Available</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Floating Badge 2 -->
+                                <div class="absolute bottom-10 -left-8 bg-white/90 backdrop-blur-md p-3 rounded-2xl shadow-xl shadow-blue-500/20 animate-bounce delay-1000 border border-white/50 hidden md:block">
+                                    <div class="flex items-center gap-2">
+                                        <div class="bg-blue-100 p-1.5 rounded-lg text-blue-600">
+                                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                                        </div>
+                                        <p class="text-xs font-extrabold text-slate-800">Instant Claim</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

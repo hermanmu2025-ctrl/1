@@ -52,9 +52,8 @@ if (isset($_POST['update_post'])) {
 // 4. TRIGGER AUTO POST (MANUAL OVERRIDE)
 if (isset($_POST['trigger_auto_ai'])) {
     try {
-        // Validate Constants
-        if (!defined('AI_TARGET_KEYWORDS') || !is_array(AI_TARGET_KEYWORDS) || empty(AI_TARGET_KEYWORDS)) {
-            throw new Exception("Konfigurasi AI_TARGET_KEYWORDS di config.php tidak valid atau kosong.");
+        if (!defined('AI_TARGET_KEYWORDS') || !is_array(AI_TARGET_KEYWORDS)) {
+            throw new Exception("Konfigurasi AI_TARGET_KEYWORDS tidak valid.");
         }
 
         $allowed_topics = AI_TARGET_KEYWORDS;
@@ -69,27 +68,29 @@ if (isset($_POST['trigger_auto_ai'])) {
             $title = $aiResult['title'] ?? 'Tanpa Judul';
             $content = $aiResult['content'] ?? '<p>Konten Kosong</p>';
             $meta_desc = $aiResult['meta_desc'] ?? '';
-            $used_model = $aiResult['used_model'] ?? 'Unknown Model';
+            $used_model = $aiResult['used_model'] ?? 'Unknown';
             
-            // Sanitize Title Length (DB Limit)
-            if (strlen($title) > 250) {
-                $title = substr($title, 0, 247) . '...';
-            }
-            
+            // Normalize
+            if (strlen($title) > 250) $title = substr($title, 0, 247) . '...';
             $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
             
-            // Validasi Duplicate Slug
             $checkSlug = $pdo->prepare("SELECT id FROM posts WHERE slug = ?");
             $checkSlug->execute([$slug]);
             if ($checkSlug->rowCount() > 0) $slug .= '-' . time();
 
-            $image_keywords = urlencode($aiResult['image_keywords'] ?? 'technology');
-            // Used picsum instead of unsplash source (deprecated)
             $thumb_url = "https://picsum.photos/1200/800?random=" . time();
             
-            $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail, meta_desc) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$title, $slug, $content, $thumb_url, $meta_desc]);
-            $success_msg = "Artikel Otomatis berhasil dibuat menggunakan model <strong>$used_model</strong> dengan topik: $selected_topic";
+            try {
+                $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail, meta_desc) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$title, $slug, $content, $thumb_url, $meta_desc]);
+                $success_msg = "Artikel Otomatis berhasil dibuat (Model: $used_model).";
+            } catch (PDOException $e) {
+                // Specific Handling for the User's Error
+                if ($e->getCode() == '42S22') {
+                    throw new Exception("CRITICAL ERROR: Kolom 'meta_desc' tidak ditemukan di database. <br><a href='install_db.php' class='underline font-bold'>KLIK DI SINI UNTUK PERBAIKI DATABASE</a>");
+                }
+                throw $e;
+            }
         }
     } catch (Exception $e) {
         $error_msg = "System Error: " . $e->getMessage();
@@ -108,15 +109,15 @@ if (isset($_POST['post_article'])) {
     
     if (move_uploaded_file($_FILES["thumbnail"]["tmp_name"], $target_dir . $filename)) {
         $thumb_url = $target_dir . $filename;
-        $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail) VALUES (?, ?, ?, ?)");
-        $stmt->execute([$title, $slug, $content, $thumb_url]);
+        // Ensure manual post also supports meta_desc if needed, or default null
+        $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail, meta_desc) VALUES (?, ?, ?, ?, ?)");
+        $stmt->execute([$title, $slug, $content, $thumb_url, substr(strip_tags($content), 0, 150)]);
         $success_msg = "Artikel manual dipublish.";
     } else {
         $error_msg = "Gagal upload gambar.";
     }
 }
 
-// Data Fetching
 $pending_deposits = $pdo->query("SELECT t.*, u.channel_name FROM transactions t JOIN users u ON t.user_id = u.id WHERE t.type='deposit' AND t.status='pending'")->fetchAll();
 $posts = $pdo->query("SELECT * FROM posts ORDER BY created_at DESC")->fetchAll();
 $available_models = getAvailableGeminiModels();
@@ -132,10 +133,8 @@ include 'header.php';
             <p class="text-slate-400 text-sm">System Control Panel v2.5</p>
         </div>
         <div class="flex gap-3">
+             <a href="install_db.php" class="bg-yellow-600 hover:bg-yellow-700 text-white px-5 py-2 rounded-lg font-bold text-sm transition flex items-center gap-2"><i data-lucide="database"></i> Fix DB Structure</a>
              <a href="index.php" class="bg-slate-700 hover:bg-slate-600 text-white px-5 py-2 rounded-lg font-bold text-sm transition">Visit Site</a>
-             <div class="bg-red-600 text-white px-5 py-2 rounded-lg font-mono font-bold text-sm flex items-center">
-                <i data-lucide="shield" class="w-4 h-4 inline mr-2"></i> Secure Mode
-            </div>
         </div>
     </div>
 
@@ -149,7 +148,7 @@ include 'header.php';
     <!-- TABS -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
-        <!-- AI GENERATOR (UPDATED LOGIC) -->
+        <!-- AI GENERATOR -->
         <div class="glass-panel p-8 rounded-3xl border border-purple-200 bg-gradient-to-br from-white to-purple-50/50">
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-600/30">
@@ -157,7 +156,7 @@ include 'header.php';
                 </div>
                 <div>
                     <h2 class="text-xl font-bold text-purple-900">Sovereign AI Auto-Pilot</h2>
-                    <p class="text-xs text-purple-600 font-bold">System v3.0 (Smart Model Selection)</p>
+                    <p class="text-xs text-purple-600 font-bold">System v3.2 (Smart Schema)</p>
                 </div>
             </div>
             
@@ -171,17 +170,12 @@ include 'header.php';
                 </div>
             </div>
 
-            <p class="text-sm text-slate-600 mb-6 leading-relaxed">
-                Sistem akan secara otomatis memilih model terbaik (priority: 1.5-flash) dan topik dari daftar wajib:
-                <span class="font-mono text-xs bg-slate-100 p-1 rounded">Youtuber Pemula, Jasa SEO, dll.</span><br>
-            </p>
-
             <form method="POST" class="space-y-4">
                  <div class="bg-yellow-50 border border-yellow-100 p-4 rounded-xl text-xs text-yellow-700 mb-4">
-                     <strong>Info:</strong> Fitur ini berjalan otomatis setiap hari via Cron Job. Tombol di bawah ini untuk memaksa AI membuat artikel SEKARANG.
+                     <strong>Status:</strong> Siap untuk deployment konten otomatis.
                  </div>
                 <button type="submit" name="trigger_auto_ai" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-4 rounded-xl transition flex justify-center items-center gap-2 shadow-lg shadow-purple-600/20">
-                    <i data-lucide="zap" class="w-4 h-4"></i> Jalankan AI Sekarang (Random Topic)
+                    <i data-lucide="zap" class="w-4 h-4"></i> Jalankan AI Sekarang
                 </button>
             </form>
         </div>
@@ -193,11 +187,7 @@ include 'header.php';
             </h2>
             <form method="POST" enctype="multipart/form-data" class="space-y-3">
                 <input type="text" name="title" required placeholder="Judul Artikel" class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
-                <textarea name="content" rows="3" required placeholder="Isi Content (Support HTML)..." class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none">
-<p>Paragraf pembuka...</p>
-<h2>Sub Judul</h2>
-<p>Isi konten...</p>
-</textarea>
+                <textarea name="content" rows="3" required placeholder="Isi Content (Support HTML)..." class="w-full p-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
                 <input type="file" name="thumbnail" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition">
                 <button type="submit" name="post_article" class="bg-slate-800 hover:bg-slate-900 text-white px-6 py-3 rounded-xl font-bold transition w-full">Publish Manual</button>
             </form>
@@ -226,53 +216,6 @@ include 'header.php';
                         <td class="px-6 py-4"><a href="<?= $d['proof_img'] ?>" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1"><i data-lucide="image" class="w-3 h-3"></i> Lihat</a></td>
                         <td class="px-6 py-4"><a href="admin.php?approve_deposit=<?= $d['id'] ?>" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-bold text-xs shadow-md transition">Approve</a></td>
                     </tr>
-                    <?php endforeach; ?>
-                    <?php if(empty($pending_deposits)) echo "<tr><td colspan='4' class='text-center py-8 text-slate-400 font-medium'>Tidak ada deposit pending saat ini.</td></tr>"; ?>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- MANAGE POSTS -->
-    <div class="mt-10 bg-white p-8 rounded-3xl shadow-lg shadow-slate-200/50 border border-slate-100">
-        <h2 class="text-xl font-bold mb-6">Manage Blog Posts</h2>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead><tr><th class="text-left pb-4 text-slate-400">Title</th><th class="text-right pb-4 text-slate-400">Action</th></tr></thead>
-                <tbody>
-                    <?php foreach($posts as $post): ?>
-                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition">
-                        <td class="py-4 font-medium text-slate-700">
-                            <?= htmlspecialchars($post['title']) ?>
-                            <div class="text-[10px] text-slate-400 font-mono mt-1">Slug: <?= $post['slug'] ?></div>
-                        </td>
-                        <td class="text-right flex justify-end gap-2 py-4">
-                            <!-- Edit Button -->
-                            <button onclick="document.getElementById('edit-<?= $post['id'] ?>').style.display='flex'" class="bg-yellow-50 text-yellow-600 px-3 py-1.5 rounded-lg text-xs font-bold border border-yellow-200 hover:bg-yellow-100">Edit</button>
-                            
-                            <!-- Delete Form -->
-                            <form method="POST" onsubmit="return confirm('Hapus postingan ini?');">
-                                <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
-                                <button type="submit" name="delete_post" class="bg-red-50 text-red-600 px-3 py-1.5 rounded-lg text-xs font-bold border border-red-200 hover:bg-red-100">Hapus</button>
-                            </form>
-                        </td>
-                    </tr>
-
-                    <!-- Simple Edit Modal -->
-                    <div id="edit-<?= $post['id'] ?>" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-50">
-                        <div class="bg-white p-8 rounded-2xl w-full max-w-2xl shadow-2xl">
-                            <h3 class="font-bold text-lg mb-6">Edit Post</h3>
-                            <form method="POST">
-                                <input type="hidden" name="post_id" value="<?= $post['id'] ?>">
-                                <input type="text" name="title" value="<?= htmlspecialchars($post['title']) ?>" class="w-full border border-slate-200 p-3 mb-4 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none">
-                                <textarea name="content" rows="10" class="w-full border border-slate-200 p-3 mb-6 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-mono text-sm"><?= htmlspecialchars($post['content']) ?></textarea>
-                                <div class="flex justify-end gap-3">
-                                    <button type="button" onclick="document.getElementById('edit-<?= $post['id'] ?>').style.display='none'" class="bg-slate-100 text-slate-600 px-6 py-2.5 rounded-xl font-bold hover:bg-slate-200 transition">Batal</button>
-                                    <button type="submit" name="update_post" class="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-blue-700 transition">Simpan</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
                     <?php endforeach; ?>
                 </tbody>
             </table>
