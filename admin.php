@@ -20,7 +20,7 @@ if (isset($_GET['approve'])) {
         $pdo->prepare("UPDATE transactions SET status = 'approved' WHERE id = ?")->execute([$id]);
         $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?")->execute([$data['amount'], $data['user_id']]);
         $pdo->commit();
-        $msg = "Deposit Approved.";
+        $msg = "Deposit Approved successfully.";
     }
 }
 
@@ -34,69 +34,119 @@ if (isset($_POST['trigger_ai'])) {
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $res['title'])));
         $thumb = "https://source.unsplash.com/1200x800/?" . urlencode($res['image_keywords']);
         
+        // Slug uniqueness check
+        $chk = $pdo->prepare("SELECT id FROM posts WHERE slug = ?");
+        $chk->execute([$slug]);
+        if($chk->rowCount() > 0) $slug .= '-' . time();
+
         $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail, meta_desc) VALUES (?, ?, ?, ?, ?)");
         $stmt->execute([$res['title'], $slug, $res['content'], $thumb, $res['meta_desc']]);
-        $msg = "AI Article Generated: " . $res['title'];
+        $msg = "AI Content Generated: " . $res['title'];
     } else {
         $msg = "AI Error: " . $res['error'];
     }
 }
 
 $pending = $pdo->query("SELECT t.*, u.channel_name FROM transactions t JOIN users u ON t.user_id = u.id WHERE t.type='deposit' AND t.status='pending'")->fetchAll();
-$page_title = "Admin Panel";
+$users_count = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+$page_title = "Admin Control Panel";
 include 'header.php';
 ?>
 
 <div class="container mx-auto px-6 py-12">
-    <div class="flex justify-between items-center mb-10 bg-slate-900 text-white p-8 rounded-3xl">
-        <div>
-            <h1 class="text-2xl font-bold">Admin Control Center</h1>
-            <p class="text-slate-400">Manage System & Content</p>
+    
+    <!-- Admin Header -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 bg-slate-900 text-white p-10 rounded-[2rem] shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-red-600 rounded-full blur-[100px] opacity-20"></div>
+        <div class="relative z-10">
+            <div class="flex items-center gap-3 mb-2">
+                <span class="bg-red-600 text-xs font-bold px-2 py-1 rounded">ADMINISTRATOR</span>
+                <span class="text-slate-400 text-sm">System v2.0</span>
+            </div>
+            <h1 class="text-3xl font-bold">Control Center</h1>
+            <p class="text-slate-400">Total Registered Users: <?= number_format($users_count) ?></p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-3 relative z-10">
             <form method="POST">
-                <button name="trigger_ai" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2">
-                    <i data-lucide="bot"></i> Generate AI Post
+                <button name="trigger_ai" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition">
+                    <i data-lucide="bot" class="w-5 h-5"></i> Manual AI Trigger
                 </button>
             </form>
-            <a href="logout.php" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold">Logout</a>
+            <a href="logout.php" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition flex items-center gap-2">
+                <i data-lucide="log-out" class="w-5 h-5"></i> Logout
+            </a>
         </div>
     </div>
 
     <?php if($msg): ?>
-        <div class="bg-blue-100 text-blue-800 p-4 rounded-xl font-bold mb-8"><?= $msg ?></div>
+        <div class="bg-green-100 border border-green-200 text-green-800 p-6 rounded-2xl font-bold mb-8 flex items-center gap-3">
+            <i data-lucide="check-circle" class="w-6 h-6"></i> <?= $msg ?>
+        </div>
     <?php endif; ?>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-        <div class="p-6 border-b border-slate-100">
-            <h2 class="text-lg font-bold text-slate-800">Deposit Requests</h2>
+    <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Deposit Table -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 overflow-hidden">
+                <div class="p-8 border-b border-slate-100 flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="wallet" class="w-5 h-5 text-slate-400"></i> Deposit Requests
+                    </h2>
+                    <span class="bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full"><?= count($pending) ?> Pending</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-xs tracking-wider">
+                            <tr>
+                                <th class="px-8 py-4">User Channel</th>
+                                <th class="px-8 py-4">Amount</th>
+                                <th class="px-8 py-4">Proof</th>
+                                <th class="px-8 py-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <?php foreach($pending as $p): ?>
+                            <tr class="hover:bg-slate-50 transition">
+                                <td class="px-8 py-5 font-bold text-slate-700"><?= htmlspecialchars($p['channel_name']) ?></td>
+                                <td class="px-8 py-5 text-green-600 font-extrabold"><?= formatRupiah($p['amount']) ?></td>
+                                <td class="px-8 py-5">
+                                    <a href="<?= $p['proof_img'] ?>" target="_blank" class="text-brand-600 hover:underline font-medium flex items-center gap-1">
+                                        <i data-lucide="image" class="w-4 h-4"></i> View
+                                    </a>
+                                </td>
+                                <td class="px-8 py-5">
+                                    <a href="?approve=<?= $p['id'] ?>" class="bg-green-500 text-white px-5 py-2 rounded-lg font-bold text-xs hover:bg-green-600 shadow-lg shadow-green-500/30 transition">
+                                        Approve
+                                    </a>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                            <?php if(empty($pending)) echo "<tr><td colspan='4' class='px-8 py-10 text-center text-slate-400'>All caught up! No pending deposits.</td></tr>"; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm text-left">
-                <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
-                    <tr>
-                        <th class="px-6 py-4">User</th>
-                        <th class="px-6 py-4">Amount</th>
-                        <th class="px-6 py-4">Proof</th>
-                        <th class="px-6 py-4">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    <?php foreach($pending as $p): ?>
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-6 py-4 font-medium"><?= htmlspecialchars($p['channel_name']) ?></td>
-                        <td class="px-6 py-4 text-green-600 font-bold"><?= formatRupiah($p['amount']) ?></td>
-                        <td class="px-6 py-4">
-                            <a href="<?= $p['proof_img'] ?>" target="_blank" class="text-blue-600 underline">View Image</a>
-                        </td>
-                        <td class="px-6 py-4">
-                            <a href="?approve=<?= $p['id'] ?>" class="bg-green-500 text-white px-4 py-1.5 rounded-lg font-bold text-xs hover:bg-green-600">Approve</a>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                    <?php if(empty($pending)) echo "<tr><td colspan='4' class='px-6 py-8 text-center text-slate-400'>No pending requests.</td></tr>"; ?>
-                </tbody>
-            </table>
+
+        <!-- Quick Stats / System Status -->
+        <div class="space-y-6">
+            <div class="bg-white p-8 rounded-[2rem] border border-slate-200 shadow-sm">
+                <h3 class="font-bold text-slate-800 mb-6">System Health</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 text-sm">Database</span>
+                        <span class="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded">Connected</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 text-sm">AI API (Gemini)</span>
+                        <span class="text-brand-600 text-xs font-bold bg-brand-50 px-2 py-1 rounded">Standby</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-500 text-sm">Youtube API</span>
+                        <span class="text-orange-600 text-xs font-bold bg-orange-50 px-2 py-1 rounded">Quota Check</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
