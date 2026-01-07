@@ -20,8 +20,11 @@ $title = $res['title'];
 $content = $res['content'];
 $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $title)));
 $meta = $res['meta_desc'] ?? '';
-// Use Unsplash source for pro images
-$thumb = "https://source.unsplash.com/1200x800/?" . urlencode($res['image_keywords']);
+
+// IMPROVED: Use Pollinations AI for Generative Image based on context
+// This ensures the photo is 'menarik sesuai konten' as requested.
+$image_prompt = urlencode($res['image_keywords'] . " high resolution, cinematic lighting, 8k, detailed, realistic");
+$thumb = "https://image.pollinations.ai/prompt/" . $image_prompt . "?width=1200&height=800&nologo=true&seed=" . rand(1000,9999);
 
 // Prevent duplicate slug
 $check = $pdo->prepare("SELECT id FROM posts WHERE slug = ?");

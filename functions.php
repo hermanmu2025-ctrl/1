@@ -44,7 +44,7 @@ function checkYoutubeSubscription($subscriberChannelId, $targetChannelId) {
     return true;
 }
 
-// --- SOVEREIGN AI INTELLIGENCE SUITE (v4.5 Enhanced Writer) ---
+// --- SOVEREIGN AI INTELLIGENCE SUITE (v5.0 Enhanced Storyteller) ---
 
 function extractJsonFromText($text) {
     if (preg_match('/```json\s*([\s\S]*?)\s*```/', $text, $matches)) {
@@ -102,30 +102,34 @@ function generateAIArticle($broad_topic) {
 
     $models = getAvailableGeminiModels();
     
-    // PROFESSIONAL HUMAN-LIKE WRITER PROMPT
-    $promptText = "Role: Expert Copywriter & Storyteller (Indonesian Language Specialist).\n";
-    $promptText .= "Task: Write a highly engaging, human-like article about: '" . $broad_topic . "'.\n";
-    $promptText .= "Language: Bahasa Indonesia (Formal but Conversational/Flowing).\n\n";
+    // PROFESSIONAL STORYTELLER PROMPT (ENHANCED V5.0)
+    $promptText = "Role: Penulis Konten Profesional & Storyteller (Ahli Bahasa Indonesia yang Mengalir & Rapi).\n";
+    $promptText .= "Task: Tulis artikel blog yang sangat menarik, humanis, dan informatif tentang: '" . $broad_topic . "'.\n";
+    $promptText .= "Target Audience: Konten Kreator & Youtuber Pemula Indonesia.\n\n";
     
-    $promptText .= "STRICT STRUCTURE & FORMATTING RULES:\n";
-    $promptText .= "1. DO NOT write wall-of-text. You MUST use short paragraphs (max 3-4 sentences per paragraph).\n";
-    $promptText .= "2. Use HTML tags for structure: <h2> for Main Chapters (BAB), <h3> for Sub-points, <p> for paragraphs.\n";
-    $promptText .= "3. Ensure high readability. Add breathing space between ideas.\n";
-    $promptText .= "4. Content Flow:\n";
-    $promptText .= "   - Introduction: Hook the reader immediately.\n";
-    $promptText .= "   - Body: Divided into 3-4 distinct sections (BAB) with clear headings.\n";
-    $promptText .= "   - Conclusion: Actionable summary.\n";
-    $promptText .= "5. Do not number the paragraphs manually, let HTML tags handle structure.\n\n";
+    $promptText .= "ATURAN FORMAT & GAYA BAHASA (WAJIB DIPATUHI):\n";
+    $promptText .= "1. GAYA BAHASA: Gunakan bahasa yang 'manusiawi', bercerita (storytelling), tidak kaku seperti robot. Gunakan kata ganti 'kita' atau 'kamu' agar akrab.\n";
+    $promptText .= "2. KERAPIAN & SPASI: Jangan membuat paragraf panjang (Wall of Text). Satu paragraf maksimal 3-4 kalimat. Berikan jeda nafas bagi pembaca.\n";
+    $promptText .= "3. STRUKTUR ARTIKEL (GUNAKAN TAG HTML):\n";
+    $promptText .= "   - Gunakan <h2>Bab 1. [Judul Subtopik Menarik]</h2> untuk setiap bagian utama.\n";
+    $promptText .= "   - Gunakan <h2>Bab 2. [Judul Subtopik Menarik]</h2> untuk bagian selanjutnya.\n";
+    $promptText .= "   - Gunakan <p> untuk setiap paragraf. Pastikan tag penutup </p> ada.\n";
+    $promptText .= "   - Gunakan <h3> untuk poin-poin detail jika perlu.\n";
+    $promptText .= "4. CONTOH ALUR TULISAN:\n";
+    $promptText .= "   (Intro): \"Pernahkah Anda merasa lelah membuat konten tapi views tetap sepi? Tenang, Anda tidak sendirian...\"\n";
+    $promptText .= "   (Body): \"<h2>Bab 1. Memahami Algoritma Sebenarnya</h2><p>Banyak yang salah paham...\"\n";
+    $promptText .= "5. KONTEN VISUAL: Berikan deskripsi prompt gambar (image_keywords) dalam bahasa Inggris yang sangat detail, cinematic, dan photorealistic untuk Unsplash/AI generator.\n\n";
 
     $promptText .= "OUTPUT FORMAT: Valid JSON Only. Keys: 'title', 'content', 'meta_desc', 'image_keywords'.\n";
-    $promptText .= "- 'content' must be a raw HTML string containing the full article with proper tagging.\n";
-    $promptText .= "- 'meta_desc' must be under 160 chars, persuasive.\n";
-    $promptText .= "- 'image_keywords' in English for image search.";
+    $promptText .= "- 'title': Judul artikel yang Clickbait tapi Jujur (Bahasa Indonesia).\n";
+    $promptText .= "- 'content': String HTML lengkap artikel (isi artikel saja, tanpa judul ulang).\n";
+    $promptText .= "- 'meta_desc': Deskripsi singkat untuk SEO (max 150 chars).\n";
+    $promptText .= "- 'image_keywords': English description for image generation (e.g., 'Cinematic shot of a young youtuber recording video in cozy studio, warm lighting, 8k, highly detailed').";
 
     $data = [
         "contents" => [["parts" => [["text" => $promptText]]]],
         "generationConfig" => [
-            "temperature" => 0.75,
+            "temperature" => 0.8, // Slightly higher creative freedom
             "maxOutputTokens" => 8000,
             "responseMimeType" => "application/json"
         ]
@@ -141,7 +145,7 @@ function generateAIArticle($broad_topic) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 90); // Increased timeout for better quality
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

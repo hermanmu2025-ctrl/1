@@ -32,7 +32,10 @@ if (isset($_POST['trigger_ai'])) {
     
     if (!isset($res['error'])) {
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $res['title'])));
-        $thumb = "https://source.unsplash.com/1200x800/?" . urlencode($res['image_keywords']);
+        
+        // IMPROVED IMAGE GENERATION: Use Pollinations AI for accurate visual representation
+        $image_prompt = urlencode($res['image_keywords'] . " high quality, photorealistic, 4k, cinematic lighting");
+        $thumb = "https://image.pollinations.ai/prompt/" . $image_prompt . "?width=1200&height=800&nologo=true&seed=" . rand(1000,9999);
         
         // Slug uniqueness check
         $chk = $pdo->prepare("SELECT id FROM posts WHERE slug = ?");
@@ -61,7 +64,7 @@ include 'header.php';
         <div class="relative z-10">
             <div class="flex items-center gap-3 mb-2">
                 <span class="bg-red-600 text-xs font-bold px-2 py-1 rounded">ADMINISTRATOR</span>
-                <span class="text-slate-400 text-sm">System v2.0</span>
+                <span class="text-slate-400 text-sm">System v2.5 (Enhanced AI)</span>
             </div>
             <h1 class="text-3xl font-bold">Control Center</h1>
             <p class="text-slate-400">Total Registered Users: <?= number_format($users_count) ?></p>

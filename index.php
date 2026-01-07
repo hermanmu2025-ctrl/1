@@ -86,19 +86,6 @@ include 'header.php';
                         <i data-lucide="play-circle" class="w-5 h-5"></i> Pelajari Cara Kerja
                     </a>
                 </div>
-                
-                <!-- Supported By Fix -->
-                <div class="pt-10 border-t border-slate-100/50">
-                    <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Di Dukung Oleh:</p>
-                    <div class="flex flex-wrap gap-8 items-center opacity-70 hover:opacity-100 transition duration-500 grayscale hover:grayscale-0">
-                         <!-- Reliable Vectors for Bank Logos -->
-                         <img src="https://cdn.worldvectorlogo.com/logos/bank-bri.svg" class="h-8 w-auto object-contain" alt="BRI">
-                         <img src="https://cdn.worldvectorlogo.com/logos/bca-bank-central-asia.svg" class="h-8 w-auto object-contain" alt="BCA">
-                         <img src="https://cdn.worldvectorlogo.com/logos/bni-46.svg" class="h-8 w-auto object-contain" alt="BNI">
-                         <img src="https://cdn.worldvectorlogo.com/logos/bank-mandiri.svg" class="h-8 w-auto object-contain" alt="Mandiri">
-                         <img src="https://cdn.worldvectorlogo.com/logos/visa-pay-logo.svg" class="h-8 w-auto object-contain" alt="VISA">
-                    </div>
-                </div>
             </div>
 
             <!-- Right Form (Login Card) -->
@@ -323,7 +310,8 @@ include 'header.php';
     <section class="py-24 bg-white relative overflow-hidden">
          <div class="container mx-auto px-6">
              <div class="bg-gradient-to-r from-yellow-500 to-orange-600 rounded-[3rem] p-10 md:p-16 text-white shadow-2xl relative overflow-hidden">
-                 <div class="absolute top-0 right-0 w-96 h-96 bg-white opacity-10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                 <div class="absolute top-0 right-0 w-96 h-96 bg-white opacity-10 rounded-full blur-3xl -mr-20 -mt-20">
+                 </div>
                  <div class="grid md:grid-cols-2 gap-10 items-center relative z-10">
                      <div>
                          <div class="inline-block bg-black/20 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-4 border border-white/20">
@@ -404,11 +392,6 @@ include 'header.php';
             <p class="text-slate-500 max-w-2xl mx-auto mb-12 text-lg">
                 Kami menggunakan protokol keamanan terkini untuk memastikan data dan channel Anda tetap aman 100%.
             </p>
-            <div class="flex flex-wrap justify-center gap-8 opacity-60 grayscale">
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/9/9a/Cloudflare_Logo.png" class="h-8 object-contain" alt="Cloudflare">
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Google_2015_logo.svg/368px-Google_2015_logo.svg.png" class="h-8 object-contain" alt="Google Safe">
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/CSS3_logo_and_wordmark.svg/1452px-CSS3_logo_and_wordmark.svg.png" class="h-8 object-contain" alt="Modern Tech">
-            </div>
         </div>
     </section>
 
