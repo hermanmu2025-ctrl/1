@@ -57,25 +57,37 @@ include 'header.php';
     <div class="container mx-auto px-6 py-20 max-w-4xl">
         <article>
             <header class="text-center mb-16">
-                <span class="px-4 py-2 rounded-full bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider mb-6 inline-block">Marketing Insight</span>
-                <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 leading-tight mb-8"><?= htmlspecialchars($post['title']) ?></h1>
+                <span class="px-4 py-2 rounded-full bg-brand-50 text-brand-600 text-xs font-bold uppercase tracking-wider mb-6 inline-block">Expert Insight</span>
+                <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight mb-8 tracking-tight"><?= htmlspecialchars($post['title']) ?></h1>
                 
                 <div class="flex items-center justify-center gap-4 text-slate-500 text-sm font-medium">
                     <div class="flex items-center gap-2">
-                        <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600">AI</div>
-                        <span>Smart Editor</span>
+                        <div class="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand-600">
+                            <i data-lucide="pen-tool" class="w-5 h-5"></i>
+                        </div>
+                        <div class="text-left leading-none">
+                            <span class="block font-bold text-slate-900">URAT ID Editorial</span>
+                            <span class="text-xs">Professional Writer</span>
+                        </div>
                     </div>
-                    <span>&bull;</span>
-                    <span><?= date('F d, Y', strtotime($post['created_at'])) ?></span>
+                    <span class="opacity-30">|</span>
+                    <span class="flex items-center gap-1"><i data-lucide="calendar" class="w-4 h-4"></i> <?= date('F d, Y', strtotime($post['created_at'])) ?></span>
                 </div>
             </header>
 
-            <div class="rounded-3xl overflow-hidden shadow-2xl mb-16">
-                <img src="<?= htmlspecialchars($post['thumbnail']) ?>" class="w-full object-cover">
+            <!-- Main Thumbnail -->
+            <div class="rounded-[2rem] overflow-hidden shadow-2xl mb-16 border border-slate-100">
+                <img src="<?= htmlspecialchars($post['thumbnail']) ?>" class="w-full object-cover transform hover:scale-[1.02] transition duration-700">
             </div>
 
-            <!-- Content Area with Enhanced Typography -->
-            <div class="prose prose-lg prose-slate mx-auto prose-headings:font-extrabold prose-headings:text-slate-900 prose-a:text-blue-600 prose-img:rounded-2xl prose-p:leading-loose prose-p:text-slate-600 prose-li:text-slate-600 prose-strong:text-slate-800">
+            <!-- Content Area with Enhanced Typography & Spacing -->
+            <!-- Added 'prose-p:mb-8' and 'prose-headings:mt-12' for the 2x enter (breathing room) effect requested -->
+            <div class="prose prose-lg md:prose-xl prose-slate mx-auto 
+                        prose-headings:font-extrabold prose-headings:text-slate-900 prose-headings:mt-16 prose-headings:mb-6
+                        prose-a:text-brand-600 prose-a:font-bold prose-a:no-underline hover:prose-a:underline
+                        prose-img:rounded-2xl prose-img:shadow-xl prose-img:my-10
+                        prose-p:leading-loose prose-p:text-slate-600 prose-p:mb-8
+                        prose-li:text-slate-600 prose-strong:text-slate-900">
                 <?= $post['content'] ?>
             </div>
         </article>
@@ -85,7 +97,7 @@ include 'header.php';
         <!-- COMMENT SECTION -->
         <section id="comments" class="max-w-2xl mx-auto">
             <div class="flex items-center gap-3 mb-8">
-                <div class="p-3 bg-blue-50 rounded-xl text-blue-600">
+                <div class="p-3 bg-brand-50 rounded-xl text-brand-600">
                     <i data-lucide="message-square" class="w-6 h-6"></i>
                 </div>
                 <h3 class="text-2xl font-bold text-slate-900">Diskusi (<?= count($comments) ?>)</h3>
@@ -93,7 +105,7 @@ include 'header.php';
 
             <!-- Comment Form -->
             <div class="bg-slate-50 p-8 rounded-3xl border border-slate-200 shadow-sm mb-12 relative overflow-hidden">
-                 <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500 rounded-full blur-[80px] opacity-10"></div>
+                 <div class="absolute top-0 right-0 w-32 h-32 bg-brand-500 rounded-full blur-[80px] opacity-10"></div>
                  
                  <h4 class="text-lg font-bold text-slate-800 mb-6">Tinggalkan Komentar</h4>
                  
@@ -108,18 +120,18 @@ include 'header.php';
                      <div class="grid md:grid-cols-2 gap-5">
                          <div class="space-y-2">
                              <label class="text-xs font-bold text-slate-500 uppercase ml-1">Nama Lengkap</label>
-                             <input type="text" name="name" required placeholder="Jhon Doe" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-medium text-slate-800">
+                             <input type="text" name="name" required placeholder="Jhon Doe" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition font-medium text-slate-800">
                          </div>
                          <div class="space-y-2">
                              <label class="text-xs font-bold text-slate-500 uppercase ml-1">Alamat Email</label>
-                             <input type="email" name="email" required placeholder="email@domain.com" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-medium text-slate-800">
+                             <input type="email" name="email" required placeholder="email@domain.com" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition font-medium text-slate-800">
                          </div>
                      </div>
                      <div class="space-y-2">
                          <label class="text-xs font-bold text-slate-500 uppercase ml-1">Komentar Anda</label>
-                         <textarea name="comment" required rows="4" placeholder="Tulis pendapat Anda di sini..." class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-medium text-slate-800"></textarea>
+                         <textarea name="comment" required rows="4" placeholder="Tulis pendapat Anda di sini..." class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition font-medium text-slate-800"></textarea>
                      </div>
-                     <button type="submit" name="submit_comment" class="btn-primary text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:shadow-blue-500/30 transition flex items-center gap-2">
+                     <button type="submit" name="submit_comment" class="btn-primary bg-brand-600 text-white font-bold px-8 py-3 rounded-xl shadow-lg hover:bg-brand-700 hover:shadow-brand-500/30 transition flex items-center gap-2">
                          <i data-lucide="send" class="w-4 h-4"></i> Kirim Komentar
                      </button>
                  </form>
@@ -158,7 +170,7 @@ include 'header.php';
         </section>
 
         <div class="mt-20 pt-10 border-t border-slate-100 text-center">
-            <a href="blog.php" class="inline-flex items-center gap-2 font-bold text-slate-600 hover:text-blue-600 transition">
+            <a href="blog.php" class="inline-flex items-center gap-2 font-bold text-slate-600 hover:text-brand-600 transition">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Blog
             </a>
         </div>

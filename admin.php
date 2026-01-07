@@ -24,7 +24,7 @@ if (isset($_GET['approve'])) {
     }
 }
 
-// Action: Trigger AI
+// Action: Trigger AI (Enhanced V2 Logic)
 if (isset($_POST['trigger_ai'])) {
     $topics = AI_TARGET_KEYWORDS;
     $topic = $topics[array_rand($topics)];
@@ -33,18 +33,28 @@ if (isset($_POST['trigger_ai'])) {
     if (!isset($res['error'])) {
         $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $res['title'])));
         
-        // IMPROVED IMAGE GENERATION: Use Pollinations AI for accurate visual representation
-        $image_prompt = urlencode($res['image_keywords'] . " high quality, photorealistic, 4k, cinematic lighting");
-        $thumb = "https://image.pollinations.ai/prompt/" . $image_prompt . "?width=1200&height=800&nologo=true&seed=" . rand(1000,9999);
+        // 1. Generate Main Thumbnail URL
+        $prompt_main = urlencode($res['img_prompt_main'] . " high quality, photorealistic, 4k, cinematic lighting, masterpiece, no text, clean");
+        $thumb_url = "https://image.pollinations.ai/prompt/" . $prompt_main . "?width=1280&height=720&nologo=true&seed=" . rand(1000,9999);
         
+        // 2. Generate Middle Image URL
+        $prompt_mid = urlencode($res['img_prompt_mid'] . " high quality, detail shot, photorealistic, 4k, ambient lighting, no text");
+        $mid_url = "https://image.pollinations.ai/prompt/" . $prompt_mid . "?width=1000&height=600&nologo=true&seed=" . rand(1000,9999);
+        
+        // 3. Process Content: Inject Middle Image
+        // We replace the [[IMAGE_MID]] placeholder with a styled img tag
+        $html_mid_image = '<figure class="my-10"><img src="' . $mid_url . '" alt="' . htmlspecialchars($res['title']) . ' detail" class="w-full rounded-2xl shadow-xl hover:scale-[1.01] transition duration-500"><figcaption class="text-center text-sm text-slate-500 mt-2 italic">Ilustrasi: ' . htmlspecialchars($res['title']) . '</figcaption></figure>';
+        
+        $final_content = str_replace('[[IMAGE_MID]]', $html_mid_image, $res['content']);
+
         // Slug uniqueness check
         $chk = $pdo->prepare("SELECT id FROM posts WHERE slug = ?");
         $chk->execute([$slug]);
         if($chk->rowCount() > 0) $slug .= '-' . time();
 
         $stmt = $pdo->prepare("INSERT INTO posts (title, slug, content, thumbnail, meta_desc) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$res['title'], $slug, $res['content'], $thumb, $res['meta_desc']]);
-        $msg = "AI Content Generated: " . $res['title'];
+        $stmt->execute([$res['title'], $slug, $final_content, $thumb_url, $res['meta_desc']]);
+        $msg = "Professional AI Article Generated: " . $res['title'];
     } else {
         $msg = "AI Error: " . $res['error'];
     }
@@ -64,7 +74,7 @@ include 'header.php';
         <div class="relative z-10">
             <div class="flex items-center gap-3 mb-2">
                 <span class="bg-red-600 text-xs font-bold px-2 py-1 rounded">ADMINISTRATOR</span>
-                <span class="text-slate-400 text-sm">System v2.5 (Enhanced AI)</span>
+                <span class="text-slate-400 text-sm">System v6.0 (Sovereign AI)</span>
             </div>
             <h1 class="text-3xl font-bold">Control Center</h1>
             <p class="text-slate-400">Total Registered Users: <?= number_format($users_count) ?></p>
@@ -72,7 +82,7 @@ include 'header.php';
         <div class="flex gap-3 relative z-10">
             <form method="POST">
                 <button name="trigger_ai" class="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 transition">
-                    <i data-lucide="bot" class="w-5 h-5"></i> Manual AI Trigger
+                    <i data-lucide="bot" class="w-5 h-5"></i> Generate New Article
                 </button>
             </form>
             <a href="logout.php" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-bold transition flex items-center gap-2">
@@ -142,11 +152,11 @@ include 'header.php';
                     </div>
                     <div class="flex justify-between items-center">
                         <span class="text-slate-500 text-sm">AI API (Gemini)</span>
-                        <span class="text-brand-600 text-xs font-bold bg-brand-50 px-2 py-1 rounded">Standby</span>
+                        <span class="text-brand-600 text-xs font-bold bg-brand-50 px-2 py-1 rounded">Professional</span>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-500 text-sm">Youtube API</span>
-                        <span class="text-orange-600 text-xs font-bold bg-orange-50 px-2 py-1 rounded">Quota Check</span>
+                        <span class="text-slate-500 text-sm">Image Gen</span>
+                        <span class="text-purple-600 text-xs font-bold bg-purple-50 px-2 py-1 rounded">Dual Stream</span>
                     </div>
                 </div>
             </div>

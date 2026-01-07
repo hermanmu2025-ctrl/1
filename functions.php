@@ -44,7 +44,7 @@ function checkYoutubeSubscription($subscriberChannelId, $targetChannelId) {
     return true;
 }
 
-// --- SOVEREIGN AI INTELLIGENCE SUITE (v5.0 Enhanced Storyteller) ---
+// --- SOVEREIGN AI INTELLIGENCE SUITE (v6.0 Professional SEO Architect) ---
 
 function extractJsonFromText($text) {
     if (preg_match('/```json\s*([\s\S]*?)\s*```/', $text, $matches)) {
@@ -102,34 +102,40 @@ function generateAIArticle($broad_topic) {
 
     $models = getAvailableGeminiModels();
     
-    // PROFESSIONAL STORYTELLER PROMPT (ENHANCED V5.0)
-    $promptText = "Role: Penulis Konten Profesional & Storyteller (Ahli Bahasa Indonesia yang Mengalir & Rapi).\n";
-    $promptText .= "Task: Tulis artikel blog yang sangat menarik, humanis, dan informatif tentang: '" . $broad_topic . "'.\n";
-    $promptText .= "Target Audience: Konten Kreator & Youtuber Pemula Indonesia.\n\n";
+    // PROFESSIONAL SEO & STORYTELLING PROMPT (ENHANCED V6.0)
+    // Updated constraints: Double spacing, 2 images (prompts), Backlink included.
     
-    $promptText .= "ATURAN FORMAT & GAYA BAHASA (WAJIB DIPATUHI):\n";
-    $promptText .= "1. GAYA BAHASA: Gunakan bahasa yang 'manusiawi', bercerita (storytelling), tidak kaku seperti robot. Gunakan kata ganti 'kita' atau 'kamu' agar akrab.\n";
-    $promptText .= "2. KERAPIAN & SPASI: Jangan membuat paragraf panjang (Wall of Text). Satu paragraf maksimal 3-4 kalimat. Berikan jeda nafas bagi pembaca.\n";
-    $promptText .= "3. STRUKTUR ARTIKEL (GUNAKAN TAG HTML):\n";
-    $promptText .= "   - Gunakan <h2>Bab 1. [Judul Subtopik Menarik]</h2> untuk setiap bagian utama.\n";
-    $promptText .= "   - Gunakan <h2>Bab 2. [Judul Subtopik Menarik]</h2> untuk bagian selanjutnya.\n";
-    $promptText .= "   - Gunakan <p> untuk setiap paragraf. Pastikan tag penutup </p> ada.\n";
-    $promptText .= "   - Gunakan <h3> untuk poin-poin detail jika perlu.\n";
-    $promptText .= "4. CONTOH ALUR TULISAN:\n";
-    $promptText .= "   (Intro): \"Pernahkah Anda merasa lelah membuat konten tapi views tetap sepi? Tenang, Anda tidak sendirian...\"\n";
-    $promptText .= "   (Body): \"<h2>Bab 1. Memahami Algoritma Sebenarnya</h2><p>Banyak yang salah paham...\"\n";
-    $promptText .= "5. KONTEN VISUAL: Berikan deskripsi prompt gambar (image_keywords) dalam bahasa Inggris yang sangat detail, cinematic, dan photorealistic untuk Unsplash/AI generator.\n\n";
+    $promptText = "Role: Senior SEO Content Writer & Storyteller Professional (Bahasa Indonesia).\n";
+    $promptText .= "Task: Tulis artikel blog 'In-Depth' (Mendalam) dan sangat menarik tentang: '" . $broad_topic . "'.\n";
+    $promptText .= "Audience: Youtuber Pemula, Content Creator, dan Digital Marketer.\n\n";
+    
+    $promptText .= "STRUKTUR & ATURAN PENULISAN (WAJIB DIPATUHI):\n";
+    $promptText .= "1. GAYA BAHASA:\n";
+    $promptText .= "   - Gunakan bahasa yang elegan, profesional, namun mengalir seperti bercerita (Storytelling).\n";
+    $promptText .= "   - Hindari bahasa robot. Gunakan empati. Contoh: 'Pernahkah Anda merasa lelah...'.\n";
+    $promptText .= "2. FORMATTING (SANGAT PENTING):\n";
+    $promptText .= "   - Gunakan tag <h2> untuk Judul Bab. Judul Bab harus menarik (Clickable).\n";
+    $promptText .= "   - Gunakan tag <p> untuk paragraf. \n";
+    $promptText .= "   - JARAK ANTAR PARAGRAF: Pastikan setiap paragraf tidak terlalu panjang (maksimal 3 kalimat). Pisahkan ide dengan paragraf baru agar ada 'ruang napas' (whitespace) yang lega.\n";
+    $promptText .= "3. PENEMPATAN GAMBAR & BACKLINK:\n";
+    $promptText .= "   - Di tengah-tengah artikel (misalnya setelah Bab 2), WAJIB tuliskan placeholder ini persis: [[IMAGE_MID]]. Sistem saya akan menggantinya dengan gambar.\n";
+    $promptText .= "   - SEO BACKLINK: Di dalam salah satu paragraf yang relevan, sisipkan 1 link HTML ke 'index.php' dengan anchor text variatif (contoh: 'Jasa Subscriber Terpercaya' atau 'Komunitas Youtuber'). Format: <a href='index.php' class='text-brand-600 font-bold underline'>Anchor Text Disini</a>.\n";
+    $promptText .= "4. KONTEN VISUAL (IMAGE PROMPTS):\n";
+    $promptText .= "   - Berikan 2 deskripsi prompt gambar (Bahasa Inggris) yang sangat detail, cinematic, dan photorealistic.\n";
+    $promptText .= "   - Prompt 1: Untuk Thumbnail Utama (Harus sangat Eye Catching).\n";
+    $promptText .= "   - Prompt 2: Untuk Gambar Tengah (Ilustrasi pendukung cerita).\n\n";
 
-    $promptText .= "OUTPUT FORMAT: Valid JSON Only. Keys: 'title', 'content', 'meta_desc', 'image_keywords'.\n";
-    $promptText .= "- 'title': Judul artikel yang Clickbait tapi Jujur (Bahasa Indonesia).\n";
-    $promptText .= "- 'content': String HTML lengkap artikel (isi artikel saja, tanpa judul ulang).\n";
-    $promptText .= "- 'meta_desc': Deskripsi singkat untuk SEO (max 150 chars).\n";
-    $promptText .= "- 'image_keywords': English description for image generation (e.g., 'Cinematic shot of a young youtuber recording video in cozy studio, warm lighting, 8k, highly detailed').";
+    $promptText .= "OUTPUT FORMAT: Valid JSON Only. Keys: 'title', 'content', 'meta_desc', 'img_prompt_main', 'img_prompt_mid'.\n";
+    $promptText .= "- 'title': Judul Headline yang Premium & SEO Friendly.\n";
+    $promptText .= "- 'content': Isi artikel lengkap format HTML (Termasuk placeholder [[IMAGE_MID]] dan Backlink).\n";
+    $promptText .= "- 'meta_desc': Ringkasan SEO 150 karakter.\n";
+    $promptText .= "- 'img_prompt_main': English prompt for main thumbnail (e.g., 'Cinematic shot of youtube studio, 8k, dramatic lighting').\n";
+    $promptText .= "- 'img_prompt_mid': English prompt for middle content image (e.g., 'Close up of analytics graph on laptop screen, bokeh, professional').";
 
     $data = [
         "contents" => [["parts" => [["text" => $promptText]]]],
         "generationConfig" => [
-            "temperature" => 0.8, // Slightly higher creative freedom
+            "temperature" => 0.75, // Balanced creativity and coherence
             "maxOutputTokens" => 8000,
             "responseMimeType" => "application/json"
         ]
@@ -145,7 +151,7 @@ function generateAIArticle($broad_topic) {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 90); // Increased timeout for better quality
+        curl_setopt($ch, CURLOPT_TIMEOUT, 90);
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);

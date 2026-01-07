@@ -31,4 +31,26 @@ PANDUAN UPDATE SISTEM URAT ID V2.0 (AI AUTO-PILOT)
    - Sistem deposit, subscribe, dan proteksi (sanksi) tetap berjalan normal.
    - Pastikan cron_protect.php juga tetap berjalan di Cron Job untuk sanksi user yang unsubscribe.
 
+6. PANDUAN MANAJEMEN FOLDER GAMBAR (UPLOADS)
+   Sistem menggunakan folder `uploads/` untuk menyimpan bukti transfer deposit. Folder ini krusial agar user bisa melakukan konfirmasi pembayaran.
+
+   A. PEMBUATAN OTOMATIS
+      Secara default, script `deposit.php` akan mencoba membuat folder ini secara otomatis dengan izin 0777. Namun, pada beberapa hosting dengan keamanan ketat, ini mungkin gagal.
+
+   B. PEMBUATAN MANUAL (SOLUSI)
+      Jika upload gagal, lakukan langkah berikut di File Manager (cPanel) atau SSH:
+      1. Buat folder baru bernama `uploads` di root direktori (sejajar dengan index.php).
+      2. Klik Kanan folder tersebut -> Change Permissions (CHMOD).
+      3. Ubah permission menjadi `755` (User Writable) atau `777` (World Writable - gunakan hanya jika 755 gagal).
+
+   C. HARDENING SECURITY (WAJIB)
+      Untuk mencegah hacker mengupload script backdoor/shell seolah-olah gambar, buat file `.htaccess` DI DALAM folder `uploads/` dengan isi:
+      
+      <FilesMatch "\.(php|phtml|php3|php4|php5|pl|py|jsp|asp|sh|cgi)$">
+          Order Allow,Deny
+          Deny from all
+      </FilesMatch>
+      
+      Ini akan memblokir eksekusi script berbahaya jika ada yang lolos dari filter PHP.
+
 Terima kasih.
